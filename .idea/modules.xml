@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/zendesk_messaging.iml" filepath="$PROJECT_DIR$/zendesk_messaging.iml" />
+      <module fileurl="file://$PROJECT_DIR$/android/zendesk_messaging_android.iml" filepath="$PROJECT_DIR$/android/zendesk_messaging_android.iml" />
+      <module fileurl="file://$PROJECT_DIR$/example/android/zendesk_messaging_example_android.iml" filepath="$PROJECT_DIR$/example/android/zendesk_messaging_example_android.iml" />
+    </modules>
+  </component>
+</project>
