@@ -16,34 +16,11 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  String _platformVersion = 'Unknown';
-
   @override
   void initState() {
     super.initState();
-    initPlatformState();
-  }
-
-  // Platform messages are asynchronous, so we initialize in an async method.
-  Future<void> initPlatformState() async {
-    String platformVersion;
-    // Platform messages may fail, so we use a try/catch PlatformException.
-    // We also handle the message potentially returning null.
-    try {
-      platformVersion =
-          await ZendeskMessaging.platformVersion ?? 'Unknown platform version';
-    } on PlatformException {
-      platformVersion = 'Failed to get platform version.';
-    }
-
-    // If the widget was removed from the tree while the asynchronous platform
-    // message was in flight, we want to discard the reply rather than calling
-    // setState to update our non-existent appearance.
-    if (!mounted) return;
-
-    setState(() {
-      _platformVersion = platformVersion;
-    });
+    //
+    ZendeskMessaging.initialize();
   }
 
   @override
@@ -54,7 +31,31 @@ class _MyAppState extends State<MyApp> {
           title: const Text('Plugin example app'),
         ),
         body: Center(
-          child: Text('Running on: $_platformVersion\n'),
+          child: Container(
+            padding: EdgeInsets.all(12.0),
+            decoration: BoxDecoration(
+              color: Colors.black,
+              borderRadius: BorderRadius.circular(20.0),
+              boxShadow: [
+                const BoxShadow(
+                  color: Colors.grey,
+                  offset: Offset(2.0, 3.0),
+                )
+              ],
+            ),
+            child: GestureDetector(
+              onTap: () {
+                ZendeskMessaging.show();
+              },
+              child: const Text(
+                "Messaging",
+                style: TextStyle(
+                  color: Colors.amberAccent,
+                  fontSize: 24.0,
+                ),
+              ),
+            ),
+          ),
         ),
       ),
     );
