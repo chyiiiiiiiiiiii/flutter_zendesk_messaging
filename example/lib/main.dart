@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'dart:async';
-
-import 'package:flutter/services.dart';
 import 'package:zendesk_messaging/zendesk_messaging.dart';
 
 void main() {
@@ -16,11 +13,18 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  final String androidChannelKey =
+      'eyJzZXR0aW5nc191cmwiOiJodHRwczovL2hhbmFtaWhlbHAuemVuZGVzay5jb20vbW9iaWxlX3Nka19hcGkvc2V0dGluZ3MvMDFGR0tDRTlSNEFLWDBGOUc2Sk04Mk5RQU0uanNvbiJ9';
+  final String iosChannelKey =
+      'eyJzZXR0aW5nc191cmwiOiJodHRwczovL2hhbmFtaWhlbHAuemVuZGVzay5jb20vbW9iaWxlX3Nka19hcGkvc2V0dGluZ3MvMDFGR1BGVFQ1Q1hFRjdRWVkwUkg2R0JYS0MuanNvbiJ9';
+
   @override
   void initState() {
     super.initState();
-    //
-    ZendeskMessaging.initialize();
+    ZendeskMessaging.initialize(
+      androidChannelKey: androidChannelKey,
+      iosChannelKey: iosChannelKey,
+    );
   }
 
   @override
@@ -28,18 +32,18 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(
-          title: const Text('Plugin example app'),
+          title: const Text('Zendesk Messaging Example'),
         ),
         body: Center(
           child: Container(
-            padding: EdgeInsets.all(12.0),
+            padding: const EdgeInsets.all(12.0),
             decoration: BoxDecoration(
               color: Colors.black,
               borderRadius: BorderRadius.circular(20.0),
               boxShadow: [
                 const BoxShadow(
                   color: Colors.grey,
-                  offset: Offset(2.0, 3.0),
+                  offset: Offset(2.0, 2.0),
                 )
               ],
             ),

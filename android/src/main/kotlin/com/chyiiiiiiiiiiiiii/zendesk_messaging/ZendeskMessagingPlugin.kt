@@ -21,20 +21,33 @@ class ZendeskMessagingPlugin: FlutterPlugin, MethodCallHandler, ActivityAware {
   ///
   /// This local reference serves to register the plugin with the Flutter Engine and unregister it
   /// when the Flutter Engine is detached from the Activity
+    private val tag = "[ZendeskMessagingPlugin]"
+
     private lateinit var channel : MethodChannel
+
     var activity: Activity? = null
 
+    var isInitialize: Boolean = false
+
     override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
-        var sendData: Any? = null
+        val sendData: Any? = call.arguments
         ///
         val zendeskMessaging = ZendeskMessaging(this, channel)
         when (call.method) {
             "initialize" -> {
-                zendeskMessaging.initialize()
+                if (isInitialize) {
+                    println("$tag - Messaging is already initialize!")
+                    return
+                }
+                val channelKey = call.argument<String>("channelKey")!!
+                zendeskMessaging.initialize(channelKey)
             }
             "show" -> {
+                if (!isInitialize) {
+                    println("$tag - Messaging needs to initialize first")
+                    return
+                }
                 zendeskMessaging.show()
-
             }
             else -> {
               result.notImplemented()

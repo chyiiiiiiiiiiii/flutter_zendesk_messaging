@@ -9,25 +9,28 @@ import zendesk.messaging.android.SuccessCallback
 
 class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val channel: MethodChannel) {
 
-    private val MESSAGING_CHANNEL_KEY =
-        "eyJzZXR0aW5nc191cmwiOiJodHRwczovL2hhbmFtaWhlbHAuemVuZGVzay5jb20vbW9iaWxlX3Nka19hcGkvc2V0dGluZ3MvMDFGR0tDRTlSNEFLWDBGOUc2Sk04Mk5RQU0uanNvbiJ9" // F/ Firebase console -> Project settings -> Cloud messaging -> Sender ID
+    private val tag = "[ZendeskMessaging]"
 
-
-    fun initialize() {
+    fun initialize(channelKey: String) {
+        println("$tag - Channel Key - $channelKey")
         Messaging.initialize(
             plugin.activity!!,
-            MESSAGING_CHANNEL_KEY,successCallback = object : SuccessCallback<Messaging>{
+            channelKey, successCallback = object : SuccessCallback<Messaging>{
                 override fun onSuccess(value: Messaging) {
-
+                    plugin.isInitialize = true;
+                    println("$tag - initialize success - $value")
                 }
             }, failureCallback = object: FailureCallback<MessagingError>{
-                override fun onFailure(cause: MessagingError?) {
+                override fun onFailure(error: MessagingError?) {
+                    plugin.isInitialize = false;
+                    println("$tag - initialize failure - $error")
                 }
-            })
+                })
     }
 
     fun show() {
         Messaging.instance().showMessaging(plugin.activity!!, Intent.FLAG_ACTIVITY_NEW_TASK)
+        println("$tag - show")
     }
 
 }

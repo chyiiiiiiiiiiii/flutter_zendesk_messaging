@@ -2,29 +2,36 @@ import UIKit
 import ZendeskSDKMessaging
 import ZendeskSDKLogger
 
-public class ZendeskMessaging {
+public class ZendeskMessaging: NSObject {
     
-    let channelKey = "eyJzZXR0aW5nc191cmwiOiJodHRwczovL2hhbmFtaWhlbHAuemVuZGVzay5jb20vbW9iaWxlX3Nka19hcGkvc2V0dGluZ3MvMDFGR1BGVFQ1Q1hFRjdRWVkwUkg2R0JYS0MuanNvbiJ9"
+    let TAG = "[ZendeskMessaging]"
     
-    func initialize() {
+    private var zendeskPlugin: SwiftZendeskMessagingPlugin? = nil
+    private var channel: FlutterMethodChannel? = nil
+
+    init(flutterPlugin: SwiftZendeskMessagingPlugin, channel: FlutterMethodChannel) {
+        self.zendeskPlugin = flutterPlugin
+        self.channel = channel
+    }
+    
+    func initialize(channelKey: String) {
+        print("\(self.TAG) - Channel Key - \(channelKey)\n")
         Messaging.initialize(channelKey: channelKey) { result in
-                    // Tracking the error from initialization failures in your
-                    // crash reporting dashboard will help to triage any unexpected failures in production
             if case let .failure(error) = result {
-                print("Zendessk Messaging - did not initialize.\nError: \(error.errorDescription ?? "")")
+                self.zendeskPlugin?.isInitialize = false
+                print("\(self.TAG) - initialize failure - \(error.errorDescription ?? "")\n")
             } else {
-                print("Zendessk Messaging -  initialize - success")
+                self.zendeskPlugin?.isInitialize = true
+                print("\(self.TAG) - initialize success")
             }
         }
-        //
-        Logger.enabled = true
-        Logger.level = .default
     }
 
     func show(rootViewController: UIViewController?) {
         guard let messagingViewController = Messaging.instance?.messagingViewController() else { return }
         guard let rootViewController = rootViewController else { return }
         rootViewController.present(messagingViewController, animated: true, completion: nil)
+        print("\(self.TAG) - show")
     }
     
 }
