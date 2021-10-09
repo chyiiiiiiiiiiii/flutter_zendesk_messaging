@@ -11,8 +11,6 @@
 
 -------------------
 
-[TOC]
-
 ## Weak
 - **Authentication**：`Currently does not support.` Unable to automatically set user information for users you know, users must enter their own name, email, etc.
 - **Tag**：`Currently does not support.` There is no way to help users with additional information like Chat.
