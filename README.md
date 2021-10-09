@@ -1,8 +1,6 @@
 # Zendesk Messaging
 
-![](messaging.png)
-
-@(Yii)[Messaging|]
+![](Messaging.png)
 
 **Messaging** is a user-based chat
 **Live Chat** is a session-based chat
