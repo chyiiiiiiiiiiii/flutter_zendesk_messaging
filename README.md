@@ -11,13 +11,6 @@
 
 -------------------
 
-## Weak
-- **Authentication**：`Currently does not support.` Unable to automatically set user information for users you know, users must enter their own name, email, etc.
-- **Tag**：`Currently does not support.` There is no way to help users with additional information like Chat.
-- **Attachment file**：`Currently does not support.` The official said it will be launched in the future.
-- **Chat room closed**：An agent can not reply to a customer at any time.
-if the customer is not active in the foreground, the room will be closed automatically. It is inconvenient to track chat history.
-
 ## How to use?
 ### Initialize
 ``` dart
@@ -40,6 +33,14 @@ if the customer is not active in the foreground, the room will be closed automat
 ZendeskMessaging.show();
 ```
 > You can use in onTap()
+
+## Weak
+- **Authentication**：`Currently does not support.` Unable to automatically set user information for users you know, users must enter their own name, email, etc.
+- **Tag**：`Currently does not support.` There is no way to help users with additional information like Chat.
+- **Attachment file**：`Currently does not support.` The official said it will be launched in the future.
+- **Chat room closed**：An agent can not reply to a customer at any time.
+if the customer is not active in the foreground, the room will be closed automatically. It is inconvenient to track chat history.
+
 
 ## Future Function
 
