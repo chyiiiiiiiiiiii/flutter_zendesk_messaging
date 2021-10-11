@@ -57,7 +57,7 @@ if the customer is not active in the foreground, the room will be closed automat
 
 ## Future Function
 
-- [ ] Push Notifications
+- Push Notifications
 
 
 ## Link
