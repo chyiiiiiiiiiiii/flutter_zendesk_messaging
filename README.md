@@ -13,7 +13,16 @@
 -------------------
 
 ## Setup
+### 1. Enable agent work-space
+![](screenshot/screenshot_1.png)
+### 2. Enable Messaging
+![](screenshot/screenshot_2.png)
 ### 
+![](screenshot/screenshot_3.png)
+### 3. Add channel and get key
+![](screenshot/screenshot_4.png)
+### 
+![](screenshot/screenshot_5.png)
 
 ## How to use?
 ### Initialize
@@ -48,7 +57,7 @@ if the customer is not active in the foreground, the room will be closed automat
 
 ## Future Function
 
-- [ ] Push Notifications
+- Push Notifications
 
 
 ## Link
