@@ -22,6 +22,13 @@ class ZendeskMessagingObserver {
   ZendeskMessagingObserver(this.removeOnCall, this.func);
 }
 
+class ZendeskLoginResponse {
+  final String? id;
+  final String? externalId;
+
+  ZendeskLoginResponse(this.id, this.externalId);
+}
+
 class ZendeskMessaging {
   static const MethodChannel _channel = MethodChannel('zendesk_messaging');
   static const channelMethodToMessageType = {
@@ -94,6 +101,19 @@ class ZendeskMessaging {
     }
   }
 
+  /// Helper function to login waiting for future to complete
+  ///
+  /// @return   The zendesk userId
+  static Future<ZendeskLoginResponse> loginUserFuture({required String jwt}) async {
+    var completer = Completer<ZendeskLoginResponse>();
+    await loginUser(
+      jwt: jwt,
+      onSuccess: (id, externalId) => completer.complete(ZendeskLoginResponse(id, externalId)),
+      onFailure: () => completer.completeError(Exception("Zendesk::loginUser failed")),
+    );
+    return completer.future;
+  }
+
   /// Logout the currently authenticated user
   ///
   /// @param  onSuccess Optional - If you need to be notified about the logout success
@@ -107,6 +127,16 @@ class ZendeskMessaging {
     } catch (e) {
       debugPrint('ZendeskMessaging - logoutUser - Error: $e}');
     }
+  }
+
+  /// Helper function to logout waiting for future to complete
+  static Future<void> logoutUserFuture() async {
+    var completer = Completer<void>();
+    await logoutUser(
+      onSuccess: () => completer.complete(),
+      onFailure: () => completer.completeError(Exception("Zendesk::logoutUser failed")),
+    );
+    return completer.future;
   }
 
   /// Handle incoming message from platforms (iOS and Android)

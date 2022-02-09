@@ -7,6 +7,7 @@ import kotlinx.coroutines.launch
 import zendesk.android.Zendesk
 import zendesk.android.ZendeskResult
 import zendesk.android.ZendeskUser
+import zendesk.messaging.android.DefaultMessagingFactory
 
 class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val channel: MethodChannel) {
     companion object {
@@ -35,7 +36,8 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
                 plugin.isInitialize = false;
                 println("$tag - initialize failure - $error")
                 channel.invokeMethod(initializeFailure, mapOf("error" to error.message))
-            }
+            },
+            messagingFactory = DefaultMessagingFactory()
         )
     }
 
