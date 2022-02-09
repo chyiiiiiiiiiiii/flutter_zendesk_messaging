@@ -85,7 +85,7 @@ class ZendeskMessaging {
   /// @param  jwt       Required by the SDK - You must generate it from your backend
   /// @param  onSuccess Optional - If you need to be notified about the login success
   /// @param  onFailure Optional - If you need to be notified about the login failure
-  static Future<void> loginUser({required String jwt, Function(String? id, String? externalId)? onSuccess, Function()? onFailure}) async {
+  static Future<void> loginUserCallbacks({required String jwt, Function(String? id, String? externalId)? onSuccess, Function()? onFailure}) async {
     if (jwt.isEmpty) {
       debugPrint('ZendeskMessaging - loginUser - jwt can not be empty');
       return;
@@ -104,9 +104,9 @@ class ZendeskMessaging {
   /// Helper function to login waiting for future to complete
   ///
   /// @return   The zendesk userId
-  static Future<ZendeskLoginResponse> loginUserFuture({required String jwt}) async {
+  static Future<ZendeskLoginResponse> loginUser({required String jwt}) async {
     var completer = Completer<ZendeskLoginResponse>();
-    await loginUser(
+    await loginUserCallbacks(
       jwt: jwt,
       onSuccess: (id, externalId) => completer.complete(ZendeskLoginResponse(id, externalId)),
       onFailure: () => completer.completeError(Exception("Zendesk::loginUser failed")),
@@ -118,7 +118,7 @@ class ZendeskMessaging {
   ///
   /// @param  onSuccess Optional - If you need to be notified about the logout success
   /// @param  onFailure Optional - If you need to be notified about the logout failure
-  static Future<void> logoutUser({Function()? onSuccess, Function()? onFailure}) async {
+  static Future<void> logoutUserCallbacks({Function()? onSuccess, Function()? onFailure}) async {
     try {
       _setObserver(ZendeskMessagingMessageType.logoutSuccess, onSuccess != null ? (Map? args) => onSuccess() : null);
       _setObserver(ZendeskMessagingMessageType.logoutFailure, onFailure != null ? (Map? args) => onFailure() : null);
@@ -130,9 +130,9 @@ class ZendeskMessaging {
   }
 
   /// Helper function to logout waiting for future to complete
-  static Future<void> logoutUserFuture() async {
+  static Future<void> logoutUser() async {
     var completer = Completer<void>();
-    await logoutUser(
+    await logoutUserCallbacks(
       onSuccess: () => completer.complete(),
       onFailure: () => completer.completeError(Exception("Zendesk::logoutUser failed")),
     );
