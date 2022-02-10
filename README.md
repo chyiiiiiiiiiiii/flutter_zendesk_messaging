@@ -47,8 +47,31 @@ ZendeskMessaging.show();
 ```
 > You can use in onTap()
 
+### Authenticate (optional)
+
+The SDK needs to be initialized before using authentication methods !
+
+```dart
+// Method 1
+final ZendeskLoginResponse result = await ZendeskMessaging.loginUser(jwt: "YOUR_JWT");
+await ZendeskMessaging.logoutUser();
+
+// Method 2 if you need callbacks
+await ZendeskMessaging.loginUserCallbacks(jwt: "YOUR_JWT", onSuccess: (id, externalId) => ..., onFailure: () => ...;
+await ZendeskMessaging.logoutUserCallbacks(onSuccess: () => ..., onFailure: () => ...);
+```
+
+### Global observer (optional)
+
+If you need to catch all events you can attach a global observer to the ZendeskMessaging.
+
+```dart
+ZendeskMessaging.setMessageHandler((type, args){
+    print("$type => $args");
+});
+```
+
 ## Weak
-- **Authentication**：`Currently does not support.` Unable to automatically set user information for users you know, users must enter their own name, email, etc.
 - **Tag**：`Currently does not support.` There is no way to help users with additional information like Chat.
 - **Attachment file**：`Currently does not support.` The official said it will be launched in the future.
 - **Chat room closed**：An agent can not reply to a customer at any time.
