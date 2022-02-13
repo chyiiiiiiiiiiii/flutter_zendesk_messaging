@@ -61,7 +61,7 @@ class _MyAppState extends State<MyApp> {
 
   void _login() {
     // You can attach local observer when calling some methods to be notified when ready
-    ZendeskMessaging.loginUser(
+    ZendeskMessaging.loginUserCallbacks(
       jwt: "my_jwt",
       onSuccess: (id, externalId) => setState(() => channelMessages.add("Login observer SUCCESS: $id, $externalId")),
       onFailure: () => setState(() => channelMessages.add("Login observer FAILURE !")),
