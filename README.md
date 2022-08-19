@@ -88,8 +88,6 @@ if the customer is not active in the foreground, the room will be closed automat
 - [Agent Workspace for messaging](https://support.zendesk.com/hc/en-us/articles/360055902354-Agent-Workspace-for-messaging)
 - [Working with messaging in your Android and iOS SDKs](https://support.zendesk.com/hc/en-us/articles/1260801714930-Working-with-messaging-in-your-Android-and-iOS-SDKs)
 
-## About Me
-- Medium：[Yii Chen](https://ab20803.medium.com/)
-- Youtube：[Yii](https://www.youtube.com/user/a22601807/videos)
-- Email：<ab20803@gmail.com>
-
+## Contribute
+- You can star and share with other developers if you feel good and learn something from this repository.
+- If you have some ideas, please discuss them with us or commit PR.
