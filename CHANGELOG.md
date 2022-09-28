@@ -1,3 +1,7 @@
+## 2.6.0+1
+
+* Update versions of environment
+
 ## 2.6.0
 
 * Upgrade to 2.6.0
