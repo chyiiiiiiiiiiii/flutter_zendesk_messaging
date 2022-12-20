@@ -15,8 +15,8 @@ A new flutter plugin project.
   s.source           = { :path => '.' }
   s.source_files = 'Classes/**/*'
   s.dependency 'Flutter'
-  s.dependency 'ZendeskSDKMessaging', '2.6.0'
-  s.platform = :ios, '10.0'
+  s.dependency 'ZendeskSDKMessaging', '2.8.0'
+  s.platform = :ios, '11.0'
 
   # Flutter.framework does not contain a i386 slice.
   s.cocoapods_version = '>= 1.10.0'
