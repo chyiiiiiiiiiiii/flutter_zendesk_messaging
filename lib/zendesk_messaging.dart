@@ -66,8 +66,10 @@ class ZendeskMessaging {
       await _channel.invokeMethod('initialize', {
         'channelKey': Platform.isAndroid ? androidChannelKey : iosChannelKey,
       });
+      return;
     } catch (e) {
       debugPrint('ZendeskMessaging - initialize - Error: $e}');
+      return;
     }
   }
 
