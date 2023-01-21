@@ -162,15 +162,14 @@ class ZendeskMessaging {
     return completer.future;
   }
 
-  static Future<void> messageCount() async {
+  static Future<int> messageCount() async {
     try {
-      await _channel.invokeMethod(
+      return await _channel.invokeMethod(
         'countMessages',
       );
-      return;
     } catch (e) {
       debugPrint('ZendeskMessaging - count - Error: $e}');
-      return;
+      return 0;
     }
   }
 

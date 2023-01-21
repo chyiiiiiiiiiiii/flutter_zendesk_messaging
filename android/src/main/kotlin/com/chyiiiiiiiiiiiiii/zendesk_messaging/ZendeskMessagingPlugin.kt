@@ -72,7 +72,7 @@ class ZendeskMessagingPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                     println("$tag - Messaging needs to be initialized first")
                     return
                 }
-                zendeskMessaging.countMessages()
+                result.success(zendeskMessaging.countMessages())
             }
             else -> {
                 result.notImplemented()
