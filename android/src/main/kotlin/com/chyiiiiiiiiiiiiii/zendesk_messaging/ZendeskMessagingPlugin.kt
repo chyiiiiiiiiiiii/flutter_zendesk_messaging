@@ -42,6 +42,9 @@ class ZendeskMessagingPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                 }
                 zendeskMessaging.show()
             }
+            "isInitialized" -> {
+                result.success(isInitialize)
+            }
             "loginUser" -> {
                 if (!isInitialize) {
                     println("$tag - Messaging needs to be initialized first")

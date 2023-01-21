@@ -168,8 +168,18 @@ class ZendeskMessaging {
         'countMessages',
       );
     } catch (e) {
-      debugPrint('ZendeskMessaging - count - Error: $e}');
+      debugPrint('ZendeskMessaging - isInitialized - Error: $e}');
       return 0;
+    }
+  }
+  static Future<bool> isInitialized()async  {
+    try {
+      return  await _channel.invokeMethod(
+        'isInitialized',
+      );
+    } catch (e) {
+      debugPrint('ZendeskMessaging - count - Error: $e}');
+      return false;
     }
   }
 
