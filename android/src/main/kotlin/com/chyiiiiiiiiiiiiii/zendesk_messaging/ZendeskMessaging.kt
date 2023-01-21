@@ -20,6 +20,7 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
         const val loginFailure: String = "login_failure"
         const val logoutSuccess: String = "logout_success"
         const val logoutFailure: String = "logout_failure"
+        const val messageCount: String = "message_count"
     }
 
     fun initialize(channelKey: String) {
@@ -44,6 +45,10 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
     fun show() {
         Zendesk.instance.messaging.showMessaging(plugin.activity!!, Intent.FLAG_ACTIVITY_NEW_TASK)
         println("$tag - show")
+    }
+    fun countMessages(){
+       val count =  Zendesk.instance.messaging.getUnreadMessageCount()
+        channel.invokeMethod(messageCount,count)
     }
 
     fun loginUser(jwt: String) {
