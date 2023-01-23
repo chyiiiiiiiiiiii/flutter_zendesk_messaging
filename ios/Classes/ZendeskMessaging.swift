@@ -70,6 +70,7 @@ public class ZendeskMessaging: NSObject {
         }
     }
     func countMessages() -> Int {
-        return Zendesk.instance?.messaging?.getUnreadMessageCount()
+        let count = Zendesk.instance?.messaging?.getUnreadMessageCount()
+        return count ?? 0
     }
 }

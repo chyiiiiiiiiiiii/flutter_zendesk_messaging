@@ -12,7 +12,6 @@ enum ZendeskMessagingMessageType {
   loginFailure,
   logoutSuccess,
   logoutFailure,
-  incomingMessage,
 }
 
 /// Used by ZendeskMessaging to attach custom async observers
@@ -39,7 +38,6 @@ class ZendeskMessaging {
     "login_failure": ZendeskMessagingMessageType.loginFailure,
     "logout_success": ZendeskMessagingMessageType.logoutSuccess,
     "logout_failure": ZendeskMessagingMessageType.logoutFailure,
-    "incoming_message": ZendeskMessagingMessageType.incomingMessage,
   };
 
   /// Global handler, all channel method calls will trigger this observer
@@ -65,8 +63,6 @@ class ZendeskMessaging {
 
     try {
       _channel.setMethodCallHandler(_onMethodCall); // start observing channel messages
-      _setObserver(ZendeskMessagingMessageType.incomingMessage, (args) {
-      });
       await _channel.invokeMethod('initialize', {
         'channelKey': Platform.isAndroid ? androidChannelKey : iosChannelKey,
       });
@@ -153,7 +149,7 @@ class ZendeskMessaging {
         'countMessages',
       );
     } catch (e) {
-      debugPrint('ZendeskMessaging - isInitialized - Error: $e}');
+      debugPrint('ZendeskMessaging - count - Error: $e}');
       return 0;
     }
   }
@@ -164,7 +160,7 @@ class ZendeskMessaging {
         'isInitialized',
       );
     } catch (e) {
-      debugPrint('ZendeskMessaging - count - Error: $e}');
+      debugPrint('ZendeskMessaging - isInitialized - Error: $e}');
       return false;
     }
   }
