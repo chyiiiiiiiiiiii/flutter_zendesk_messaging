@@ -51,10 +51,27 @@ public class SwiftZendeskMessagingPlugin: NSObject, FlutterPlugin {
                 }
                 zendeskMessaging.logoutUser()
                 break
+            case "countMessages":
+                if (!isInitialize) {
+                    print("\(TAG) - Messaging needs to be initialized first.\n")
+                }
+            handleMessageCount()
+            break
+            
+            case "isInitialized":
+            handleInitializedStatus()
+            break
             default:
                 break
         }
 
         result(nil)
+    }
+
+    private func handleMessageCount() ->Int{
+        return zendeskMessaging.countMessages()
+    }
+    private func handleInitializedStatus() ->Bool{
+        return isInitialize
     }
 }

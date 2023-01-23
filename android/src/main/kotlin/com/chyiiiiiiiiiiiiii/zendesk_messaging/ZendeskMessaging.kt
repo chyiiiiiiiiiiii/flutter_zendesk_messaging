@@ -7,7 +7,10 @@ import kotlinx.coroutines.launch
 import zendesk.android.Zendesk
 import zendesk.android.ZendeskResult
 import zendesk.android.ZendeskUser
+import zendesk.android.events.ZendeskEvent
+import zendesk.android.events.ZendeskEventListener
 import zendesk.messaging.android.DefaultMessagingFactory
+
 
 class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val channel: MethodChannel) {
     companion object {
@@ -20,6 +23,30 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
         const val loginFailure: String = "login_failure"
         const val logoutSuccess: String = "logout_success"
         const val logoutFailure: String = "logout_failure"
+        const val incomingMessage: String = "incoming_message"
+    }
+
+    private val zendeskEventListener: ZendeskEventListener = ZendeskEventListener {
+        zendeskEvent -> when (zendeskEvent) {
+        is ZendeskEvent.UnreadMessageCountChanged ->{
+           if(zendeskEvent.currentUnreadCount!=0){
+               channel.invokeMethod(incomingMessage,zendeskEvent.currentUnreadCount)
+           }
+        }
+        is ZendeskEvent.AuthenticationFailed -> {
+            println(zendeskEvent.error.message)
+        }
+        else -> {
+            println(zendeskEvent.toString())
+        }
+    }
+    }
+
+    fun addEventListener() {
+        Zendesk.instance.addEventListener(zendeskEventListener)
+    }
+    fun removeEventListener() {
+        Zendesk.instance.removeEventListener(zendeskEventListener)
     }
 
     fun initialize(channelKey: String) {
@@ -86,3 +113,5 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
         }
     }
 }
+
+
