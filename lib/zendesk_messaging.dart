@@ -143,6 +143,7 @@ class ZendeskMessaging {
     return completer.future;
   }
 
+  /// Retrieve uread messages count from the Zendesk SDK
   static Future<int> messageCount() async {
     try {
       return await _channel.invokeMethod(
@@ -154,6 +155,7 @@ class ZendeskMessaging {
     }
   }
 
+///  Check if the Zendesk SDK for Android and iOS is already initialized
   static Future<bool> isInitialized() async {
     try {
       return await _channel.invokeMethod(
