@@ -60,7 +60,7 @@ class _MyAppState extends State<MyApp> {
                     onPressed: () => ZendeskMessaging.show(),
                     child: const Text("Show messaging")),
                 ElevatedButton(
-                    onPressed: () => countMessages(),
+                    onPressed: () => _getUnreadMessageCount(),
                     child: const Text("Count unread messages")),
                 ElevatedButton(
                     onPressed: () => _login(), child: const Text("Login")),
@@ -86,7 +86,7 @@ class _MyAppState extends State<MyApp> {
     );
   }
 
-  void countMessages() async {
+  void _getUnreadMessageCount() async {
     final messageCount = await ZendeskMessaging.getUnreadMessageCount();
     setState(() {
       unreadMessageCount = messageCount;
