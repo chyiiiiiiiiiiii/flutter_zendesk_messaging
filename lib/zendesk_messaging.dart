@@ -144,10 +144,10 @@ class ZendeskMessaging {
   }
 
   /// Retrieve uread messages count from the Zendesk SDK
-  static Future<int> messageCount() async {
+  static Future<int> getUnreadMessageCount() async {
     try {
       return await _channel.invokeMethod(
-        'countMessages',
+        'getUnreadMessageCount',
       );
     } catch (e) {
       debugPrint('ZendeskMessaging - count - Error: $e}');

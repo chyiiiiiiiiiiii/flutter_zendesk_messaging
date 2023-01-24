@@ -13,11 +13,13 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  static const String androidChannelKey = "eyJzZXR0aW5nc191cmwiOiJodHRwczovL2hhbmFtaWhlbHAuemVuZGVzay5jb20vbW9iaWxlX3Nka19hcGkvc2V0dGluZ3MvMDFGR0tDRTlSNEFLWDBGOUc2Sk04Mk5RQU0uanNvbiJ9";
-  static const String iosChannelKey = "eyJzZXR0aW5nc191cmwiOiJodHRwczovL2hhbmFtaWhlbHAuemVuZGVzay5jb20vbW9iaWxlX3Nka19hcGkvc2V0dGluZ3MvMDFGR1BGVFQ1Q1hFRjdRWVkwUkg2R0JYS0MuanNvbiJ9";
+  static const String androidChannelKey =
+      "eyJzZXR0aW5nc191cmwiOiJodHRwczovL2hhbmFtaWhlbHAuemVuZGVzay5jb20vbW9iaWxlX3Nka19hcGkvc2V0dGluZ3MvMDFGR0tDRTlSNEFLWDBGOUc2Sk04Mk5RQU0uanNvbiJ9";
+  static const String iosChannelKey =
+      "eyJzZXR0aW5nc191cmwiOiJodHRwczovL2hhbmFtaWhlbHAuemVuZGVzay5jb20vbW9iaWxlX3Nka19hcGkvc2V0dGluZ3MvMDFGR1BGVFQ1Q1hFRjdRWVkwUkg2R0JYS0MuanNvbiJ9";
 
   final List<String> channelMessages = [];
-  int unreadMessageCount =0;
+  int unreadMessageCount = 0;
 
   @override
   void initState() {
@@ -45,16 +47,26 @@ class _MyAppState extends State<MyApp> {
             child: ListView(
               children: [
                 Text(message),
-               const SizedBox(height: 20,),
-
+                const SizedBox(
+                  height: 20,
+                ),
                 ElevatedButton(
-                  onPressed: () => ZendeskMessaging.initialize(androidChannelKey: androidChannelKey, iosChannelKey: iosChannelKey),
+                  onPressed: () => ZendeskMessaging.initialize(
+                      androidChannelKey: androidChannelKey,
+                      iosChannelKey: iosChannelKey),
                   child: const Text("Initialize"),
                 ),
-                ElevatedButton(onPressed: () => ZendeskMessaging.show(), child: const Text("Show messaging")),
-                ElevatedButton(onPressed: () => countMessages(), child: const Text("Count unread messages")),
-                ElevatedButton(onPressed: () => _login(), child: const Text("Login")),
-                ElevatedButton(onPressed: () => ZendeskMessaging.logoutUser(), child: const Text("Logout")),
+                ElevatedButton(
+                    onPressed: () => ZendeskMessaging.show(),
+                    child: const Text("Show messaging")),
+                ElevatedButton(
+                    onPressed: () => countMessages(),
+                    child: const Text("Count unread messages")),
+                ElevatedButton(
+                    onPressed: () => _login(), child: const Text("Login")),
+                ElevatedButton(
+                    onPressed: () => ZendeskMessaging.logoutUser(),
+                    child: const Text("Logout")),
               ],
             ),
           ),
@@ -67,12 +79,15 @@ class _MyAppState extends State<MyApp> {
     // You can attach local observer when calling some methods to be notified when ready
     ZendeskMessaging.loginUserCallbacks(
       jwt: "my_jwt",
-      onSuccess: (id, externalId) => setState(() => channelMessages.add("Login observer SUCCESS: $id, $externalId")),
-      onFailure: () => setState(() => channelMessages.add("Login observer FAILURE !")),
+      onSuccess: (id, externalId) => setState(() =>
+          channelMessages.add("Login observer SUCCESS: $id, $externalId")),
+      onFailure: () =>
+          setState(() => channelMessages.add("Login observer FAILURE !")),
     );
   }
-  void countMessages()async{
-    final messageCount = await ZendeskMessaging.messageCount();
+
+  void countMessages() async {
+    final messageCount = await ZendeskMessaging.getUnreadMessageCount();
     setState(() {
       unreadMessageCount = messageCount;
     });

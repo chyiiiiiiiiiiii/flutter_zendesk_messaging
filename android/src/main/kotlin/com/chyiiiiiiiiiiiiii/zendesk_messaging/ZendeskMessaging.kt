@@ -7,8 +7,6 @@ import kotlinx.coroutines.launch
 import zendesk.android.Zendesk
 import zendesk.android.ZendeskResult
 import zendesk.android.ZendeskUser
-import zendesk.android.events.ZendeskEvent
-import zendesk.android.events.ZendeskEventListener
 import zendesk.messaging.android.DefaultMessagingFactory
 
 
@@ -32,12 +30,12 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
             plugin.activity!!,
             channelKey,
             successCallback = { value ->
-                plugin.isInitialize = true;
+                plugin.isInitialized = true;
                 println("$tag - initialize success - $value")
                 channel.invokeMethod(initializeSuccess, null)
             },
             failureCallback = { error ->
-                plugin.isInitialize = false;
+                plugin.isInitialized = false;
                 println("$tag - initialize failure - $error")
                 channel.invokeMethod(initializeFailure, mapOf("error" to error.message))
             },
@@ -49,7 +47,7 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
         Zendesk.instance.messaging.showMessaging(plugin.activity!!, Intent.FLAG_ACTIVITY_NEW_TASK)
         println("$tag - show")
     }
-    fun countMessages(): Int {
+    fun getUnreadMessageCount(): Int {
         return try {
             Zendesk.instance.messaging.getUnreadMessageCount()
         }catch (error: Throwable){

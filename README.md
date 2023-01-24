@@ -66,7 +66,7 @@ There's must be a logged user to allow the recovery of the unread message count!
 
 ```dart
 // Retrieve the unread message count
-final int count = await await ZendeskMessaging.messageCount();
+final int count = await ZendeskMessaging.getUnreadMessageCount()();
 
 // if there's no user logged in, the message count will always be zero.
 ```
