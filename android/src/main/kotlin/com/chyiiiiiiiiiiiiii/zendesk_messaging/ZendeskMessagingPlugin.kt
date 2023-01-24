@@ -9,7 +9,6 @@ import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
-
 /** ZendeskMessagingPlugin */
 class ZendeskMessagingPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
     /// The MethodChannel that will the communication between Flutter and native Android
@@ -21,7 +20,7 @@ class ZendeskMessagingPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
     var activity: Activity? = null
     var isInitialized: Boolean = false
 
-    override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
+    override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: MethodChannel.Result) {
         val sendData: Any? = call.arguments
         val zendeskMessaging = ZendeskMessaging(this, channel)
 
