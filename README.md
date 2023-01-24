@@ -60,6 +60,16 @@ await ZendeskMessaging.logoutUser();
 await ZendeskMessaging.loginUserCallbacks(jwt: "YOUR_JWT", onSuccess: (id, externalId) => ..., onFailure: () => ...;
 await ZendeskMessaging.logoutUserCallbacks(onSuccess: () => ..., onFailure: () => ...);
 ```
+### Retrieve the unread message count (optional)
+
+There's must be a logged user to allow the recovery of the unread message count!
+
+```dart
+// Retrieve the unread message count
+final int count = await await ZendeskMessaging.messageCount();
+
+// if there's no user logged in, the message count will always be zero.
+```
 
 ### Global observer (optional)
 
