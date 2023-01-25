@@ -9,6 +9,7 @@ import zendesk.android.ZendeskResult
 import zendesk.android.ZendeskUser
 import zendesk.messaging.android.DefaultMessagingFactory
 
+
 class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val channel: MethodChannel) {
     companion object {
         const val tag = "[ZendeskMessaging]"
@@ -22,18 +23,19 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
         const val logoutFailure: String = "logout_failure"
     }
 
+
     fun initialize(channelKey: String) {
         println("$tag - Channel Key - $channelKey")
         Zendesk.initialize(
             plugin.activity!!,
             channelKey,
             successCallback = { value ->
-                plugin.isInitialize = true;
+                plugin.isInitialized = true;
                 println("$tag - initialize success - $value")
                 channel.invokeMethod(initializeSuccess, null)
             },
             failureCallback = { error ->
-                plugin.isInitialize = false;
+                plugin.isInitialized = false;
                 println("$tag - initialize failure - $error")
                 channel.invokeMethod(initializeFailure, mapOf("error" to error.message))
             },
@@ -44,6 +46,13 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
     fun show() {
         Zendesk.instance.messaging.showMessaging(plugin.activity!!, Intent.FLAG_ACTIVITY_NEW_TASK)
         println("$tag - show")
+    }
+    fun getUnreadMessageCount(): Int {
+        return try {
+            Zendesk.instance.messaging.getUnreadMessageCount()
+        }catch (error: Throwable){
+            0
+        }
     }
 
     fun loginUser(jwt: String) {
@@ -79,3 +88,5 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
         }
     }
 }
+
+

@@ -9,8 +9,6 @@ import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
-import io.flutter.plugin.common.MethodChannel.Result
-
 /** ZendeskMessagingPlugin */
 class ZendeskMessagingPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
     /// The MethodChannel that will the communication between Flutter and native Android
@@ -20,15 +18,15 @@ class ZendeskMessagingPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
     private val tag = "[ZendeskMessagingPlugin]"
     private lateinit var channel: MethodChannel
     var activity: Activity? = null
-    var isInitialize: Boolean = false
+    var isInitialized: Boolean = false
 
-    override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
+    override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: MethodChannel.Result) {
         val sendData: Any? = call.arguments
         val zendeskMessaging = ZendeskMessaging(this, channel)
 
         when (call.method) {
             "initialize" -> {
-                if (isInitialize) {
+                if (isInitialized) {
                     println("$tag - Messaging is already initialized!")
                     return
                 }
@@ -36,14 +34,17 @@ class ZendeskMessagingPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                 zendeskMessaging.initialize(channelKey)
             }
             "show" -> {
-                if (!isInitialize) {
+                if (!isInitialized) {
                     println("$tag - Messaging needs to be initialized first")
                     return
                 }
                 zendeskMessaging.show()
             }
+            "isInitialized" -> {
+                result.success(isInitialized)
+            }
             "loginUser" -> {
-                if (!isInitialize) {
+                if (!isInitialized) {
                     println("$tag - Messaging needs to be initialized first")
                     return
                 }
@@ -61,11 +62,18 @@ class ZendeskMessagingPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                 }
             }
             "logoutUser" -> {
-                if (!isInitialize) {
+                if (!isInitialized) {
                     println("$tag - Messaging needs to be initialized first")
                     return
                 }
                 zendeskMessaging.logoutUser()
+            }
+            "getUnreadMessageCount" -> {
+                if (!isInitialized) {
+                    println("$tag - Messaging needs to be initialized first")
+                    return
+                }
+                result.success(zendeskMessaging.getUnreadMessageCount())
             }
             else -> {
                 result.notImplemented()

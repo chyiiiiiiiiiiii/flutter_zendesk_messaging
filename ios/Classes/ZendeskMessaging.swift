@@ -24,11 +24,11 @@ public class ZendeskMessaging: NSObject {
         print("\(self.TAG) - Channel Key - \(channelKey)\n")
         Zendesk.initialize(withChannelKey: channelKey, messagingFactory: DefaultMessagingFactory()) { result in
             if case let .failure(error) = result {
-                self.zendeskPlugin?.isInitialize = false
+                self.zendeskPlugin?.isInitialized = false
                 print("\(self.TAG) - initialize failure - \(error.localizedDescription)\n")
                 self.channel?.invokeMethod(ZendeskMessaging.initializeFailure, arguments: ["error": error.localizedDescription])
             } else {
-                self.zendeskPlugin?.isInitialize = true
+                self.zendeskPlugin?.isInitialized = true
                 print("\(self.TAG) - initialize success")
                 self.channel?.invokeMethod(ZendeskMessaging.initializeSuccess, arguments: [])
             }
@@ -68,5 +68,9 @@ public class ZendeskMessaging: NSObject {
                 break;
             }
         }
+    }
+    func getUnreadMessageCount() -> Int {
+        let count = Zendesk.instance?.messaging?.getUnreadMessageCount()
+        return count ?? 0
     }
 }

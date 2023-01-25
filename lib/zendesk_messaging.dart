@@ -66,8 +66,10 @@ class ZendeskMessaging {
       await _channel.invokeMethod('initialize', {
         'channelKey': Platform.isAndroid ? androidChannelKey : iosChannelKey,
       });
+      return;
     } catch (e) {
       debugPrint('ZendeskMessaging - initialize - Error: $e}');
+      return;
     }
   }
 
@@ -85,14 +87,16 @@ class ZendeskMessaging {
   /// @param  jwt       Required by the SDK - You must generate it from your backend
   /// @param  onSuccess Optional - If you need to be notified about the login success
   /// @param  onFailure Optional - If you need to be notified about the login failure
-  static Future<void> loginUserCallbacks({required String jwt, Function(String? id, String? externalId)? onSuccess, Function()? onFailure}) async {
+  static Future<void> loginUserCallbacks(
+      {required String jwt, Function(String? id, String? externalId)? onSuccess, Function()? onFailure}) async {
     if (jwt.isEmpty) {
       debugPrint('ZendeskMessaging - loginUser - jwt can not be empty');
       return;
     }
 
     try {
-      _setObserver(ZendeskMessagingMessageType.loginSuccess, onSuccess != null ? (Map? args) => onSuccess(args?["id"], args?["externalId"]) : null);
+      _setObserver(ZendeskMessagingMessageType.loginSuccess,
+          onSuccess != null ? (Map? args) => onSuccess(args?["id"], args?["externalId"]) : null);
       _setObserver(ZendeskMessagingMessageType.loginFailure, onFailure != null ? (Map? args) => onFailure() : null);
 
       await _channel.invokeMethod('loginUser', {'jwt': jwt});
@@ -137,6 +141,30 @@ class ZendeskMessaging {
       onFailure: () => completer.completeError(Exception("Zendesk::logoutUser failed")),
     );
     return completer.future;
+  }
+
+  /// Retrieve uread messages count from the Zendesk SDK
+  static Future<int> getUnreadMessageCount() async {
+    try {
+      return await _channel.invokeMethod(
+        'getUnreadMessageCount',
+      );
+    } catch (e) {
+      debugPrint('ZendeskMessaging - count - Error: $e}');
+      return 0;
+    }
+  }
+
+///  Check if the Zendesk SDK for Android and iOS is already initialized
+  static Future<bool> isInitialized() async {
+    try {
+      return await _channel.invokeMethod(
+        'isInitialized',
+      );
+    } catch (e) {
+      debugPrint('ZendeskMessaging - isInitialized - Error: $e}');
+      return false;
+    }
   }
 
   /// Handle incoming message from platforms (iOS and Android)
