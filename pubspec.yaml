@@ -5,6 +5,7 @@ homepage: https://github.com/chyiiiiiiiiiiii/flutter_zendesk_messaging
 
 environment:
   sdk: '>=2.19.0 <3.0.0'
+  flutter: ">=1.16.0"
 
 dependencies:
   flutter:
