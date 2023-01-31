@@ -155,7 +155,7 @@ class ZendeskMessaging {
     }
   }
 
-///  Check if the Zendesk SDK for Android and iOS is already initialized
+  ///  Check if the Zendesk SDK for Android and iOS is already initialized
   static Future<bool> isInitialized() async {
     try {
       return await _channel.invokeMethod(

@@ -13,12 +13,12 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  static const String androidChannelKey =
-      "eyJzZXR0aW5nc191cmwiOiJodHRwczovL2hhbmFtaWhlbHAuemVuZGVzay5jb20vbW9iaWxlX3Nka19hcGkvc2V0dGluZ3MvMDFGR0tDRTlSNEFLWDBGOUc2Sk04Mk5RQU0uanNvbiJ9";
-  static const String iosChannelKey =
-      "eyJzZXR0aW5nc191cmwiOiJodHRwczovL2hhbmFtaWhlbHAuemVuZGVzay5jb20vbW9iaWxlX3Nka19hcGkvc2V0dGluZ3MvMDFGR1BGVFQ1Q1hFRjdRWVkwUkg2R0JYS0MuanNvbiJ9";
+  static const String androidChannelKey = "your android key";
+  static const String iosChannelKey = "your iOS key";
 
   final List<String> channelMessages = [];
+
+  bool isLogin = false;
   int unreadMessageCount = 0;
 
   @override
@@ -34,7 +34,7 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    var message = channelMessages.join("\n");
+    final message = channelMessages.join("\n");
 
     return MaterialApp(
       home: Scaffold(
@@ -52,21 +52,29 @@ class _MyAppState extends State<MyApp> {
                 ),
                 ElevatedButton(
                   onPressed: () => ZendeskMessaging.initialize(
-                      androidChannelKey: androidChannelKey,
-                      iosChannelKey: iosChannelKey),
+                    androidChannelKey: androidChannelKey,
+                    iosChannelKey: iosChannelKey,
+                  ),
                   child: const Text("Initialize"),
                 ),
-                ElevatedButton(
+                if (isLogin) ...[
+                  ElevatedButton(
                     onPressed: () => ZendeskMessaging.show(),
-                    child: const Text("Show messaging")),
-                ElevatedButton(
+                    child: const Text("Show messaging"),
+                  ),
+                  ElevatedButton(
                     onPressed: () => _getUnreadMessageCount(),
-                    child: const Text("Count unread messages")),
+                    child: Text('Get unread message count - $unreadMessageCount'),
+                  ),
+                ],
                 ElevatedButton(
-                    onPressed: () => _login(), child: const Text("Login")),
+                  onPressed: () => _login(),
+                  child: const Text("Login"),
+                ),
                 ElevatedButton(
-                    onPressed: () => ZendeskMessaging.logoutUser(),
-                    child: const Text("Logout")),
+                  onPressed: () => _logout(),
+                  child: const Text("Logout"),
+                ),
               ],
             ),
           ),
@@ -79,17 +87,29 @@ class _MyAppState extends State<MyApp> {
     // You can attach local observer when calling some methods to be notified when ready
     ZendeskMessaging.loginUserCallbacks(
       jwt: "my_jwt",
-      onSuccess: (id, externalId) => setState(() =>
-          channelMessages.add("Login observer SUCCESS: $id, $externalId")),
-      onFailure: () =>
-          setState(() => channelMessages.add("Login observer FAILURE !")),
+      onSuccess: (id, externalId) => setState(() {
+        channelMessages.add("Login observer - SUCCESS: $id, $externalId");
+        isLogin = true;
+      }),
+      onFailure: () => setState(() {
+        channelMessages.add("Login observer - FAILURE!");
+        isLogin = false;
+      }),
     );
+  }
+
+  void _logout() {
+    ZendeskMessaging.logoutUser();
+    setState(() {
+      isLogin = false;
+    });
   }
 
   void _getUnreadMessageCount() async {
     final messageCount = await ZendeskMessaging.getUnreadMessageCount();
-    setState(() {
+    if (mounted) {
       unreadMessageCount = messageCount;
-    });
+      setState(() {});
+    }
   }
 }
