@@ -30,7 +30,7 @@ public class ZendeskMessaging: NSObject {
             } else {
                 self.zendeskPlugin?.isInitialized = true
                 print("\(self.TAG) - initialize success")
-                self.channel?.invokeMethod(ZendeskMessaging.initializeSuccess, arguments: [])
+                self.channel?.invokeMethod(ZendeskMessaging.initializeSuccess, arguments: [:])
             }
         }
     }
