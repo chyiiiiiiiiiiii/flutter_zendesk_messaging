@@ -41,13 +41,13 @@ class ZendeskMessaging {
   };
 
   /// Global handler, all channel method calls will trigger this observer
-  static Function(ZendeskMessagingMessageType type, Map? arguments)? _handler;
+  static Function(ZendeskMessagingMessageType type, dynamic arguments)? _handler;
 
   /// Allow end-user to use local observer when calling some methods
   static final Map<ZendeskMessagingMessageType, ZendeskMessagingObserver> _observers = {};
 
   /// Attach a global observer for incoming messages
-  static void setMessageHandler(Function(ZendeskMessagingMessageType type, Map? arguments)? handler) {
+  static void setMessageHandler(Function(ZendeskMessagingMessageType type, dynamic arguments)? handler) {
     _handler = handler;
   }
 
