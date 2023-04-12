@@ -1,3 +1,7 @@
+## 2.7.3
+
+* Fix parameter type issue of handler function
+
 ## 2.7.2
 
 * Upgrade Dart sdk version
@@ -16,7 +20,7 @@
 ## 0.0.2
 
 * Authentication
-* Globol observer
+* Global observer
 ## 0.0.1
 
 * Initial release

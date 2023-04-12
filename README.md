@@ -1,11 +1,14 @@
 # Zendesk Messaging
 
+<a href="https://pub.dev/packages/zendesk_messaging"><img src="https://img.shields.io/pub/v/zendesk_messaging.svg" alt="Pub"></a>
+
+
 ![](Messaging.png)
 
 **Messaging** is a "user-based" chat
 
 **Live Chat** is a "session-based" chat
- 
+
 - **Better UI (Native)**
 - **Chat history**
 - **Answer Bot**
@@ -17,11 +20,11 @@
 ![](screenshot/screenshot_1.png)
 ### 2. Enable Messaging
 ![](screenshot/screenshot_2.png)
-### 
+###
 ![](screenshot/screenshot_3.png)
 ### 3. Add channel and get key
 ![](screenshot/screenshot_4.png)
-### 
+###
 ![](screenshot/screenshot_5.png)
 
 ## How to use?

@@ -1,6 +1,6 @@
 name: zendesk_messaging
 description: Zendesk-Messaging for Flutter developer
-version: 2.7.2
+version: 2.7.3
 homepage: https://github.com/chyiiiiiiiiiiii/flutter_zendesk_messaging
 
 environment:
