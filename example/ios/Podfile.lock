@@ -1,29 +1,33 @@
 PODS:
   - Flutter (1.0.0)
-  - Zendesk (1.7.0):
-    - ZendeskSDKConversationKit (~> 1.5.0)
-  - zendesk_messaging (2.7.0):
+  - Zendesk (1.9.0):
+    - ZendeskSDKConversationKit (~> 1.7.0)
+    - ZendeskSDKCoreUtilities (~> 1.1.0)
+  - zendesk_messaging (2.9.0):
     - Flutter
-    - ZendeskSDKMessaging (= 2.7.0)
-  - ZendeskSDKConversationKit (1.5.0):
-    - ZendeskSDKFayeClient (~> 1.1.0)
-    - ZendeskSDKHTTPClient (~> 0.8.0)
-    - ZendeskSDKStorage (~> 0.4.4)
-  - ZendeskSDKFayeClient (1.1.0):
-    - ZendeskSDKLogger (~> 0.4.3)
-    - ZendeskSDKSocketClient (~> 1.1.0)
-  - ZendeskSDKHTTPClient (0.8.0):
-    - ZendeskSDKLogger (~> 0.4.3)
-  - ZendeskSDKLogger (0.4.3)
-  - ZendeskSDKMessaging (2.7.0):
-    - Zendesk (~> 1.7.0)
-    - ZendeskSDKConversationKit (~> 1.5.0)
-    - ZendeskSDKUIComponents (~> 2.2.0)
-  - ZendeskSDKSocketClient (1.1.0):
-    - ZendeskSDKLogger (~> 0.4.3)
-  - ZendeskSDKStorage (0.4.4):
-    - ZendeskSDKLogger (~> 0.4.3)
-  - ZendeskSDKUIComponents (2.2.0)
+    - ZendeskSDKMessaging (= 2.9.0)
+  - ZendeskSDKConversationKit (1.7.0):
+    - ZendeskSDKCoreUtilities (~> 1.1.0)
+    - ZendeskSDKFayeClient (~> 1.2.0)
+    - ZendeskSDKHTTPClient (~> 0.10.0)
+    - ZendeskSDKStorage (~> 0.5.0)
+  - ZendeskSDKCoreUtilities (1.1.0)
+  - ZendeskSDKFayeClient (1.2.0):
+    - ZendeskSDKLogger (~> 0.5.0)
+    - ZendeskSDKSocketClient (~> 1.2.0)
+  - ZendeskSDKHTTPClient (0.10.0):
+    - ZendeskSDKLogger (~> 0.5.0)
+  - ZendeskSDKLogger (0.5.0)
+  - ZendeskSDKMessaging (2.9.0):
+    - Zendesk (~> 1.9.0)
+    - ZendeskSDKConversationKit (~> 1.7.0)
+    - ZendeskSDKCoreUtilities (~> 1.1.0)
+    - ZendeskSDKUIComponents (~> 2.4.0)
+  - ZendeskSDKSocketClient (1.2.0):
+    - ZendeskSDKLogger (~> 0.5.0)
+  - ZendeskSDKStorage (0.5.0):
+    - ZendeskSDKLogger (~> 0.5.0)
+  - ZendeskSDKUIComponents (2.4.0)
 
 DEPENDENCIES:
   - Flutter (from `Flutter`)
@@ -33,6 +37,7 @@ SPEC REPOS:
   trunk:
     - Zendesk
     - ZendeskSDKConversationKit
+    - ZendeskSDKCoreUtilities
     - ZendeskSDKFayeClient
     - ZendeskSDKHTTPClient
     - ZendeskSDKLogger
@@ -49,16 +54,17 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   Flutter: f04841e97a9d0b0a8025694d0796dd46242b2854
-  Zendesk: 496eea23f06ec642ecaeba6f67209d8bc4e18504
-  zendesk_messaging: 2801b74b4ed1a0ae5d3fa5ad31cd74461b8281bc
-  ZendeskSDKConversationKit: f4c15806476cb995f8f7bc0089bc57dc7fa09474
-  ZendeskSDKFayeClient: 7b2c60eff19c5a8752284997007af49fe9ce8851
-  ZendeskSDKHTTPClient: bdbc3420644db77f6aaeae3a1496373acdb9f574
-  ZendeskSDKLogger: 1eb208475583b94571d651f74a70e7d762cdfa1c
-  ZendeskSDKMessaging: 6d969cb9e014f6ff85f0cb3b0be76d228c3d19c7
-  ZendeskSDKSocketClient: f88a8b55fa592f694593bf6396ffc4884e778281
-  ZendeskSDKStorage: b310557446bbfd7508c0500fea0cf29d2c7692bd
-  ZendeskSDKUIComponents: e6f4af54a01a483ae955df6a762d8ede57dee8f5
+  Zendesk: ae0ba9dee76da8aabdbc0f98517e003cca67703c
+  zendesk_messaging: e997d83027ae3f081ca6508059c9983693ac7527
+  ZendeskSDKConversationKit: 5ece8f13e6aaa182c913ec2561eeb5b546dc66bf
+  ZendeskSDKCoreUtilities: 441c504f89b67f091f9648d362d40a4abbb6005b
+  ZendeskSDKFayeClient: c1d4b9973cdf999c7a717c981c4cd4c6e1186f93
+  ZendeskSDKHTTPClient: c39c4ed8864241ebe2fe0c043800fb53f8726f1f
+  ZendeskSDKLogger: 9d80689480792be806f3c777124c87bbaed9394f
+  ZendeskSDKMessaging: 41d5ebbc4e44f40311e6ef8bfc13d6a0cd9f7a52
+  ZendeskSDKSocketClient: 4c11b499acc0c4abe55c5574a74ff8135b7b7624
+  ZendeskSDKStorage: be97db5c9418cecbd15e1b24b732cc0e8e10a991
+  ZendeskSDKUIComponents: 4a21eafb35f5690b5a3bd6681cf0376b38c1c4c8
 
 PODFILE CHECKSUM: 7368163408c647b7eb699d0d788ba6718e18fb8d
 

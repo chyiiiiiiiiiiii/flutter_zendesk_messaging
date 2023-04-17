@@ -1,3 +1,7 @@
+## 2.7.4
+
+* Upgrade ZendeskSDKMessaging of iOS to v2.9.0 to be compatible with Xcode 14.3
+
 ## 2.7.3
 
 * Fix parameter type issue of handler function
