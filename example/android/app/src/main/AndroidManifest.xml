@@ -2,20 +2,11 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.chyiiiiiiiiiiiiii.zendesk_messaging_example">
 
+    <uses-permission android:name="android.permission.CAMERA"/>
+
     <application
         android:icon="@mipmap/ic_launcher"
         android:label="zendesk_messaging_example">
-
-        <provider
-            android:name="androidx.core.content.FileProvider"
-            android:authorities="${applicationId}.zendeskprovider"
-            tools:replace="android:authorities"
-            android:exported="false"
-            android:grantUriPermissions="true">
-            <meta-data
-                android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/files_path" />
-        </provider>
 
         <activity
             android:name=".MainActivity"

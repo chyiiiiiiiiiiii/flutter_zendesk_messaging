@@ -3,6 +3,9 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/zendesk_messaging.iml" filepath="$PROJECT_DIR$/.idea/modules/zendesk_messaging.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/zendesk_messaging.androidTest.iml" filepath="$PROJECT_DIR$/.idea/modules/zendesk_messaging.androidTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/zendesk_messaging.main.iml" filepath="$PROJECT_DIR$/.idea/modules/zendesk_messaging.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/zendesk_messaging.unitTest.iml" filepath="$PROJECT_DIR$/.idea/modules/zendesk_messaging.unitTest.iml" />
     </modules>
   </component>
 </project>

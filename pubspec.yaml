@@ -1,11 +1,10 @@
 name: zendesk_messaging
 description: Zendesk-Messaging for Flutter developer
-version: 2.7.4
+version: 2.7.5
 homepage: https://github.com/chyiiiiiiiiiiii/flutter_zendesk_messaging
 
 environment:
-  sdk: '>=2.19.0 <3.0.0'
-  flutter: ">=1.16.0"
+  sdk: '>=3.0.0 <4.0.0'
 
 dependencies:
   flutter:

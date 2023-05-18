@@ -75,12 +75,11 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
     fun logoutUser() {
         GlobalScope.launch (Dispatchers.Main)  {
             try {
-                val result = Zendesk.instance.logoutUser()
-                if (result is ZendeskResult.Failure) {
-                    channel.invokeMethod(logoutFailure, null)
-                } else {
+                Zendesk.instance.logoutUser(successCallback = {
                     channel.invokeMethod(logoutSuccess, null)
-                }
+                }, failureCallback = {
+                    channel.invokeMethod(logoutFailure, null)
+                });
             } catch (error: Throwable) {
                 println("$tag - Logout failure : ${error.message}")
                 channel.invokeMethod(logoutFailure, mapOf("error" to error.message))
