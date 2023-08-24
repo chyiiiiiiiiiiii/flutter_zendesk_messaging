@@ -106,8 +106,7 @@ ZendeskMessaging.setMessageHandler((type, args){
 });
 ```
 
-## Weak
-- **Tag**：`Currently does not support.` There is no way to help users with additional information like Chat.
+## Known shortcomings
 - **Attachment file**：`Currently does not support.` The official said it will be launched in the future.
 - **Chat room closed**：An agent can not reply to a customer at any time.
 if the customer is not active in the foreground, the room will be closed automatically. It is inconvenient to track chat history.
