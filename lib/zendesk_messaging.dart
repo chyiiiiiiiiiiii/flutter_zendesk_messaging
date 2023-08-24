@@ -73,8 +73,8 @@ class ZendeskMessaging {
     }
   }
 
-  /// Invalidates the current instance of Zendesk.
-/// After calling this method you will have to call Zendesk.initialize again if you would like to use Zendesk.
+  /// Invalidates the current instance of ZendeskMessaging.
+/// After calling this method you will have to call ZendeskMessaging.initialize again if you would like to use ZendeskMessaging.
   static Future<void> invalidate() async {
     try {
       await _channel.invokeMethod('invalidate');

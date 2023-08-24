@@ -33,6 +33,12 @@ class _MyAppState extends State<MyApp> {
   }
 
   @override
+  void dispose() {
+    ZendeskMessaging.invalidate();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final message = channelMessages.join("\n");
 
