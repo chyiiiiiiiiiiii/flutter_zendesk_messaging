@@ -68,6 +68,14 @@ class _MyAppState extends State<MyApp> {
                   ),
                 ],
                 ElevatedButton(
+                  onPressed: () => _setTags(),
+                  child: const Text("Add tags"),
+                ),
+                ElevatedButton(
+                  onPressed: () => _clearTags(),
+                  child: const Text("Clear tags"),
+                ),
+                ElevatedButton(
                   onPressed: () => _login(),
                   child: const Text("Login"),
                 ),
@@ -111,5 +119,12 @@ class _MyAppState extends State<MyApp> {
       unreadMessageCount = messageCount;
       setState(() {});
     }
+  }
+  void _setTags() async {
+    final tags = ['tag1', 'tag2', 'tag3'];
+    await ZendeskMessaging.setConversationTags(tags);
+  }
+  void _clearTags() async {
+    await ZendeskMessaging.clearConversationTags();
   }
 }
