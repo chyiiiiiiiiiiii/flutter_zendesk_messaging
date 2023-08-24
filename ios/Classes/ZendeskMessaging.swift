@@ -35,6 +35,11 @@ public class ZendeskMessaging: NSObject {
         }
     }
 
+     func invalidate() {
+        Zendesk.invalidate()
+       self.zendeskPlugin?.isInitialized = false
+    }
+
     func show(rootViewController: UIViewController?) {
         guard let messagingViewController = Zendesk.instance?.messaging?.messagingViewController() else { return }
         guard let rootViewController = rootViewController else { return }

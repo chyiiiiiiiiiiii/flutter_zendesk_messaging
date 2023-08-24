@@ -43,6 +43,11 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
         )
     }
 
+    fun invalidate() {
+        Zendesk.invalidate()
+        plugin.isInitialized = false;
+    }
+
     fun show() {
         Zendesk.instance.messaging.showMessaging(plugin.activity!!, Intent.FLAG_ACTIVITY_NEW_TASK)
         println("$tag - show")
@@ -63,7 +68,7 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
     fun clearConversationTags(){
         Zendesk.instance.messaging.clearConversationTags()
     }
-    
+
     fun loginUser(jwt: String) {
         Zendesk.instance.loginUser(
             jwt,

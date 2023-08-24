@@ -75,6 +75,13 @@ public class SwiftZendeskMessagingPlugin: NSObject, FlutterPlugin {
                 }
                 zendeskMessaging.clearConversationTags()
                 break
+            case "invalidate":
+                if (!isInitialized) {
+                    println("$tag - Messaging is already on an invalid state")
+                    return
+                }
+                zendeskMessaging.invalidate()
+                break
             default:
                 break
         }
