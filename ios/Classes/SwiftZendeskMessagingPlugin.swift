@@ -77,7 +77,7 @@ public class SwiftZendeskMessagingPlugin: NSObject, FlutterPlugin {
                 break
             case "invalidate":
                 if (!isInitialized) {
-                    println("$tag - Messaging is already on an invalid state")
+                    print("\(TAG) - Messaging is already on an invalid state\n")
                     return
                 }
                 zendeskMessaging.invalidate()

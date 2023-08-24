@@ -38,6 +38,7 @@ public class ZendeskMessaging: NSObject {
      func invalidate() {
         Zendesk.invalidate()
        self.zendeskPlugin?.isInitialized = false
+       print("\(self.TAG) - invalidate")
     }
 
     func show(rootViewController: UIViewController?) {

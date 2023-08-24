@@ -46,6 +46,7 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
     fun invalidate() {
         Zendesk.invalidate()
         plugin.isInitialized = false;
+        println("$tag - invalidated")
     }
 
     fun show() {
