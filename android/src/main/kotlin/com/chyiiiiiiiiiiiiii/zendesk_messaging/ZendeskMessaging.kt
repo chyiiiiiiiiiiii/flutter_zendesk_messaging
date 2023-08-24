@@ -47,6 +47,7 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
         Zendesk.instance.messaging.showMessaging(plugin.activity!!, Intent.FLAG_ACTIVITY_NEW_TASK)
         println("$tag - show")
     }
+
     fun getUnreadMessageCount(): Int {
         return try {
             Zendesk.instance.messaging.getUnreadMessageCount()
@@ -55,6 +56,14 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
         }
     }
 
+    fun setConversationTags(tags: List<String>){
+        Zendesk.instance.messaging.setConversationTags(tags)
+    }
+
+    fun clearConversationTags(){
+        Zendesk.instance.messaging.clearConversationTags()
+    }
+    
     fun loginUser(jwt: String) {
         Zendesk.instance.loginUser(
             jwt,
