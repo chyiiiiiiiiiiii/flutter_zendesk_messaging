@@ -1,3 +1,7 @@
+## 2.7.6
+
+* Add conversation tag
+
 ## 2.7.5
 
 * Upgrade Flutter sdk version
