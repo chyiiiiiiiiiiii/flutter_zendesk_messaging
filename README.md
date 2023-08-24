@@ -73,6 +73,28 @@ final int count = await ZendeskMessaging.getUnreadMessageCount()();
 
 // if there's no user logged in, the message count will always be zero.
 ```
+### Set tags to a support ticket (optional)
+
+Allows custom conversation tags to be set, adding contextual data about the conversation.
+
+```dart
+// Add tags to a conversation
+ await ZendeskMessaging.setConversationTags(['tag1', 'tag2', 'tag3']);
+
+// Note: Conversation tags are not immediately associated with a conversation when this method is called. 
+// It will only be applied to a conversation when end users either start a new conversation or send a new message in an existing conversation.
+```
+### Clear conversation tags (optional)
+
+Allows custom conversation tags to be set, adding contextual data about the conversation.
+
+```dart
+// Allows you to clear conversation tags from native SDK storage when the client side context changes.
+// This removes all stored conversation tags from the natice SDK storage.
+ await ZendeskMessaging.clearConversationTags();
+
+// Note: This method does not affect conversation tags already applied to the conversation.
+```
 
 ### Global observer (optional)
 
