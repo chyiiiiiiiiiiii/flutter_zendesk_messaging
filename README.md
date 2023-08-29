@@ -44,6 +44,19 @@
 ```
 > just use initialize() one time
 
+### Invalidate (optional)
+``` dart
+@override
+  void dispose() {
+    ZendeskMessaging.invalidate();
+    super.dispose();
+  }
+///  Invalidates the current instance of ZendeskMessaging.
+```
+After calling this method you will have to call ZendeskMessaging.initialize again if you would like to use ZendeskMessaging.
+
+This can be useful if you need to initiate a chat with another set of `androidChannelKey` and `iosChannelKey`
+
 ### Show
 ```dart
 ZendeskMessaging.show();
@@ -60,7 +73,7 @@ final ZendeskLoginResponse result = await ZendeskMessaging.loginUser(jwt: "YOUR_
 await ZendeskMessaging.logoutUser();
 
 // Method 2 if you need callbacks
-await ZendeskMessaging.loginUserCallbacks(jwt: "YOUR_JWT", onSuccess: (id, externalId) => ..., onFailure: () => ...;
+await ZendeskMessaging.loginUserCallbacks(jwt: "YOUR_JWT", onSuccess: (id, externalId) => ..., onFailure: () => ...);
 await ZendeskMessaging.logoutUserCallbacks(onSuccess: () => ..., onFailure: () => ...);
 ```
 ### Retrieve the unread message count (optional)

@@ -101,6 +101,13 @@ class ZendeskMessagingPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                 }
                 zendeskMessaging.clearConversationTags()
             }
+            "invalidate" -> {
+                if (!isInitialized) {
+                    println("$tag - Messaging is already on an invalid state")
+                    return
+                }
+                zendeskMessaging.invalidate()
+            }
             else -> {
                 result.notImplemented()
             }
