@@ -1,3 +1,7 @@
+## 2.7.7
+
+* Add ```invalidate()``` to invalidate the current instance of ZendeskMessaging
+
 ## 2.7.6
 
 * Add conversation tag
