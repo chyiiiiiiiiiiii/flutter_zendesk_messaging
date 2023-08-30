@@ -19,6 +19,7 @@ class ZendeskMessagingPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
     private lateinit var channel: MethodChannel
     var activity: Activity? = null
     var isInitialized: Boolean = false
+    var isLoggedIn: Boolean = false
 
     override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: MethodChannel.Result) {
         val sendData: Any? = call.arguments
@@ -42,6 +43,11 @@ class ZendeskMessagingPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
             }
             "isInitialized" -> {
                 result.success(isInitialized)
+                return
+            }
+            "isLoggedIn" -> {
+                result.success(isLoggedIn)
+                return
             }
             "loginUser" -> {
                 if (!isInitialized) {

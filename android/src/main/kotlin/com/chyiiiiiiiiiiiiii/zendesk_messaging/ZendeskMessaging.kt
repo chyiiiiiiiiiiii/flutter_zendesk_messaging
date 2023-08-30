@@ -74,6 +74,7 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
         Zendesk.instance.loginUser(
             jwt,
             { value: ZendeskUser? ->
+                plugin.isLoggedIn = true;
                 value?.let {
                     channel.invokeMethod(loginSuccess, mapOf("id" to it.id, "externalId" to it.externalId))
                 } ?: run {
@@ -91,6 +92,7 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
         GlobalScope.launch (Dispatchers.Main)  {
             try {
                 Zendesk.instance.logoutUser(successCallback = {
+                    plugin.isLoggedIn = false;
                     channel.invokeMethod(logoutSuccess, null)
                 }, failureCallback = {
                     channel.invokeMethod(logoutFailure, null)
