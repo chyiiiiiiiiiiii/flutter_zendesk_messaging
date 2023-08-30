@@ -89,6 +89,10 @@ class _MyAppState extends State<MyApp> {
                   onPressed: () => _logout(),
                   child: const Text("Logout"),
                 ),
+                ElevatedButton(
+                  onPressed: () => _checkUserLoggedIn(),
+                  child: const Text("Check LoggedIn"),
+                ),
               ],
             ),
           ),
@@ -118,8 +122,7 @@ class _MyAppState extends State<MyApp> {
       isLogin = false;
     });
   }
-
-  void _getUnreadMessageCount() async {
+    void _getUnreadMessageCount() async {
     final messageCount = await ZendeskMessaging.getUnreadMessageCount();
     if (mounted) {
       unreadMessageCount = messageCount;
@@ -132,5 +135,11 @@ class _MyAppState extends State<MyApp> {
   }
   void _clearTags() async {
     await ZendeskMessaging.clearConversationTags();
+  }
+  void _checkUserLoggedIn()async {
+   final isLoggedIn = await ZendeskMessaging.isLoggedIn();
+   setState(() {
+     channelMessages.add('User is ${isLoggedIn?'':'not'} logged in');
+   });
   }
 }
