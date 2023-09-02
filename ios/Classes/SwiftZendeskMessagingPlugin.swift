@@ -5,6 +5,7 @@ public class SwiftZendeskMessagingPlugin: NSObject, FlutterPlugin {
     let TAG = "[SwiftZendeskMessagingPlugin]"
     private var channel: FlutterMethodChannel
     var isInitialized = false
+    var isLoggedIn = false
     
     init(channel: FlutterMethodChannel) {
         self.channel = channel
@@ -61,6 +62,9 @@ public class SwiftZendeskMessagingPlugin: NSObject, FlutterPlugin {
             case "isInitialized":
                 result(handleInitializedStatus())
                 break
+            case "isLoggedIn":
+                result(handleLoggedInStatus())
+                break
             
             case "setConversationTags":
                 if (!isInitialized) {
@@ -96,5 +100,8 @@ public class SwiftZendeskMessagingPlugin: NSObject, FlutterPlugin {
     }
     private func handleInitializedStatus() ->Bool{
         return isInitialized
+    }
+    private func handleLoggedInStatus() ->Bool{
+        return isLoggedIn
     }
 }

@@ -60,6 +60,7 @@ public class ZendeskMessaging: NSObject {
         Zendesk.instance?.loginUser(with: jwt) { result in
             switch result {
             case .success(let user):
+            self.zendeskPlugin?.isLoggedIn = true
                 self.channel?.invokeMethod(ZendeskMessaging.loginSuccess, arguments: ["id": user.id, "externalId": user.externalId])
                 break;
             case .failure(let error):
@@ -74,6 +75,7 @@ public class ZendeskMessaging: NSObject {
         Zendesk.instance?.logoutUser { result in
             switch result {
             case .success:
+                self.zendeskPlugin?.isLoggedIn = false
                 self.channel?.invokeMethod(ZendeskMessaging.logoutSuccess, arguments: [])
                 break;
             case .failure(let error):

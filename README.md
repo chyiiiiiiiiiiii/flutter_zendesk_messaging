@@ -76,6 +76,19 @@ await ZendeskMessaging.logoutUser();
 await ZendeskMessaging.loginUserCallbacks(jwt: "YOUR_JWT", onSuccess: (id, externalId) => ..., onFailure: () => ...);
 await ZendeskMessaging.logoutUserCallbacks(onSuccess: () => ..., onFailure: () => ...);
 ```
+### Check authentication state (optional)
+
+This method can be used to check wheter the user is alreday logged in!
+
+```dart
+await ZendeskMessaging.loginUser(jwt: "YOUR_JWT");
+final bool isLoggedIn = await ZendeskMessaging.isLoggedIn();
+// After the user is logged in [isLoggedIn] is true
+await ZendeskMessaging.logoutUser();
+final bool userStillLoggedIn = await ZendeskMessaging.isLoggedIn();
+// After you call the logout method [ZendeskMessaging.isLoggedIn()] will return [false]
+
+```
 ### Retrieve the unread message count (optional)
 
 There's must be a logged user to allow the recovery of the unread message count!

@@ -203,6 +203,17 @@ class ZendeskMessaging {
       return false;
     }
   }
+  ///  Check if the user is already logged in
+  static Future<bool> isLoggedIn() async {
+    try {
+      return await _channel.invokeMethod(
+        'isLoggedIn',
+      );
+    } catch (e) {
+      debugPrint('ZendeskMessaging - isLoggedIn - Error: $e}');
+      return false;
+    }
+  }
 
   /// Handle incoming message from platforms (iOS and Android)
   static Future<dynamic> _onMethodCall(final MethodCall call) async {
