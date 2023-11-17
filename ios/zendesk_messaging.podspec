@@ -4,7 +4,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'zendesk_messaging'
-  s.version          = '2.13.1'
+  s.version          = '2.16.0'
   s.summary          = 'A new flutter plugin project.'
   s.description      = <<-DESC
 A new flutter plugin project.
@@ -15,8 +15,8 @@ A new flutter plugin project.
   s.source           = { :path => '.' }
   s.source_files = 'Classes/**/*'
   s.dependency 'Flutter'
-  s.dependency 'ZendeskSDKMessaging', '2.13.1'
-  s.platform = :ios, '11.0'
+  s.dependency 'ZendeskSDKMessaging', '2.16.0'
+  s.platform = :ios, '12.0'
 
   # Flutter.framework does not contain a i386 slice.
   s.cocoapods_version = '>= 1.10.0'
