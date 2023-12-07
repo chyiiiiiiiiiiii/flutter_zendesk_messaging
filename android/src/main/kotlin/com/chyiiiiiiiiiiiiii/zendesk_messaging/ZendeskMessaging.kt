@@ -103,6 +103,12 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
             }
         }
     }
+
+    fun setConversationFields(fields: Map<String, String>){
+        Zendesk.instance.messaging.setConversationFields(fields)
+    }
+
+    fun clearConversationFields(){
+        Zendesk.instance.messaging.clearConversationFields()
+    }
 }
-
-
