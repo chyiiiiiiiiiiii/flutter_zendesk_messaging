@@ -79,6 +79,19 @@ public class SwiftZendeskMessagingPlugin: NSObject, FlutterPlugin {
                 }
                 zendeskMessaging.clearConversationTags()
                 break
+            case "setConversationFields":
+                if (!isInitialized) {
+                    print("\(TAG) - Messaging needs to be initialized first.\n")
+                }
+                let fields: [String: String] = arguments?["fields"] as! [String: String]
+                zendeskMessaging.setConversationFields(fields:fields)
+                break
+            case "clearConversationFields":
+                if (!isInitialized) {
+                    print("\(TAG) - Messaging needs to be initialized first.\n")
+                }
+                zendeskMessaging.clearConversationFields()
+                break
             case "invalidate":
                 if (!isInitialized) {
                     print("\(TAG) - Messaging is already on an invalid state\n")

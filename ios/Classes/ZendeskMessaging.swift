@@ -89,4 +89,12 @@ public class ZendeskMessaging: NSObject {
         let count = Zendesk.instance?.messaging?.getUnreadMessageCount()
         return count ?? 0
     }
+
+    func setConversationFields(fields: [String: String]) {
+        Zendesk.instance?.messaging?.setConversationFields(fields)
+    }
+
+    func clearConversationFields() {
+        Zendesk.instance?.messaging?.clearConversationFields()
+    }
 }
