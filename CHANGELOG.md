@@ -1,3 +1,8 @@
+## 2.8.0
+
+* Upgrade zendesk-messaging sdk version to 2.16.0
+* Minimum iOS version is now 12
+
 ## 2.7.7
 
 * Add ```invalidate()``` to invalidate the current instance of ZendeskMessaging
