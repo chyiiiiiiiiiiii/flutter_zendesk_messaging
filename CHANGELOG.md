@@ -2,6 +2,7 @@
 
 * Upgrade zendesk-messaging sdk version to 2.16.0
 * Minimum iOS version is now 12
+* ADD conversation fields
 
 ## 2.7.7
 
