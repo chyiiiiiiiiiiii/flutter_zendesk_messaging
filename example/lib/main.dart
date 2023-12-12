@@ -93,6 +93,18 @@ class _MyAppState extends State<MyApp> {
                   onPressed: () => _checkUserLoggedIn(),
                   child: const Text("Check LoggedIn"),
                 ),
+                ElevatedButton(
+                  onPressed: () => _setFields(),
+                  child: const Text("Add Fields"),
+                ),
+                ElevatedButton(
+                  onPressed: () => _clearFields(),
+                  child: const Text("Clear Fields"),
+                ),
+                ElevatedButton(
+                  onPressed: () => _show(),
+                  child: const Text("Show"),
+                ),
               ],
             ),
           ),
@@ -141,5 +153,19 @@ class _MyAppState extends State<MyApp> {
    setState(() {
      channelMessages.add('User is ${isLoggedIn?'':'not'} logged in');
    });
+  }
+  void _setFields() async {
+    Map<String, String> fieldsMap = {};
+
+    fieldsMap["field1"] = "Value 1";
+    fieldsMap["field2"] = "Value 2";
+
+    await ZendeskMessaging.setConversationFields(fieldsMap);
+  }
+  void _clearFields() async {
+    await ZendeskMessaging.clearConversationFields();
+  }
+  void _show() {
+    ZendeskMessaging.show();
   }
 }

@@ -245,4 +245,40 @@ class ZendeskMessaging {
       _observers[type] = ZendeskMessagingObserver(removeOnCall, func);
     }
   }
+
+  /// Set values for conversation fields in the SDK to add contextual data about the conversation.
+  ///
+  /// This method allows setting custom field values which are used to add additional context to a conversation in Zendesk.
+  /// Conversation fields must be created as custom ticket fields in the Zendesk Admin Center and configured to be settable by end users.
+  ///
+  /// Note: Conversation fields are not immediately associated with a conversation when this method is called.
+  /// The fields will only be applied to a conversation when end users start a new conversation or send a new message in an existing conversation.
+  ///
+  /// System ticket fields, such as the Priority field, are not supported.
+  ///
+  /// The values set by this method are persisted in the SDK and will apply to all conversations going forward.
+  /// To remove fields, use the `ClearConversationFields` API.
+  ///
+  /// Example:
+  /// To set custom fields "user_type" and "purchase_amount" for a conversation, use the following call:
+  /// ```
+  /// setConversationFields({"user_type": "new_user", "purchase_amount": "39.99"});
+  /// ```
+  static Future<void> setConversationFields(Map<String, String> fields) async {
+    try {
+      await _channel.invokeMethod('setConversationFields', {'fields': fields});
+    } catch (e) {
+      debugPrint('ZendeskMessaging - setConversationFields - Error: $e}');
+    }
+  }
+
+  /// Remove all the fields on the current support ticket
+  ///
+  static Future<void> clearConversationFields() async {
+    try {
+      await _channel.invokeMethod('clearConversationFields');
+    } catch (e) {
+      debugPrint('ZendeskMessaging - clearConversationFields - Error: $e}');
+    }
+  }
 }
