@@ -42,13 +42,6 @@ public class ZendeskMessaging: NSObject {
        self.zendeskPlugin?.isInitialized = false
        print("\(self.TAG) - invalidate")
     }
-
-    /*func show(rootViewController: UIViewController?) {
-        guard let messagingViewController = Zendesk.instance?.messaging?.messagingViewController() else { return }
-        guard let rootViewController = rootViewController else { return }
-        rootViewController.present(messagingViewController, animated: true, completion: nil)
-        print("\(self.TAG) - show")
-    }*/
     
     func show(rootViewController: UIViewController?) {
         guard let messagingViewController = Zendesk.instance?.messaging?.messagingViewController() as? UIViewController else {
