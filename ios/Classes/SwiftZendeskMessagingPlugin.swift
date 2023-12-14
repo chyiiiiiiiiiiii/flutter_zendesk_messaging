@@ -19,11 +19,16 @@ public class SwiftZendeskMessagingPlugin: NSObject, FlutterPlugin {
     }
     
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+        DispatchQueue.main.async {
+            self.processMethodCall(call, result: result)
+        }
+    }
+
+    private func processMethodCall(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         let method = call.method
         let arguments = call.arguments as? Dictionary<String, Any>
         let zendeskMessaging = ZendeskMessaging(flutterPlugin: self, channel: channel)
-
-        // chat sdk method channels
+        
         switch(method){
             case "initialize":
                 if (isInitialized) {
@@ -100,10 +105,8 @@ public class SwiftZendeskMessagingPlugin: NSObject, FlutterPlugin {
                 zendeskMessaging.invalidate()
                 break
             default:
-                break
+                result(FlutterMethodNotImplemented)
         }
-
-        result(nil)
     }
 
     private func handleMessageCount() ->Int{
