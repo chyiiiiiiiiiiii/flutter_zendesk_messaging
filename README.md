@@ -2,6 +2,8 @@
 
 <a href="https://pub.dev/packages/zendesk_messaging"><img src="https://img.shields.io/pub/v/zendesk_messaging.svg" alt="Pub"></a>
 
+> [!NOTE]  
+> Very welcome every developer to contribute to this package of Zendesk. Now I have no much time to maintain regularly🥸
 
 ![](Messaging.png)
 
