@@ -1,5 +1,8 @@
 # Zendesk Messaging
 
+> [!NOTE]
+> Very welcome every developer to contribute to this package of Zendesk. Now I have no much time to maintain regularly🥸
+
 <a href="https://pub.dev/packages/zendesk_messaging"><img src="https://img.shields.io/pub/v/zendesk_messaging.svg" alt="Pub"></a>
 
 
@@ -107,7 +110,7 @@ Allows custom conversation tags to be set, adding contextual data about the conv
 // Add tags to a conversation
  await ZendeskMessaging.setConversationTags(['tag1', 'tag2', 'tag3']);
 
-// Note: Conversation tags are not immediately associated with a conversation when this method is called. 
+// Note: Conversation tags are not immediately associated with a conversation when this method is called.
 // It will only be applied to a conversation when end users either start a new conversation or send a new message in an existing conversation.
 ```
 ### Clear conversation tags (optional)
