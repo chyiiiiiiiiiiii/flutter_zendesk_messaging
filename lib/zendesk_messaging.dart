@@ -18,12 +18,14 @@ enum ZendeskMessagingMessageType {
 /// Used by ZendeskMessaging to attach custom async observers
 class ZendeskMessagingObserver {
   ZendeskMessagingObserver(this.removeOnCall, this.func);
+
   final bool removeOnCall;
   final Function(Map? args) func;
 }
 
 class ZendeskLoginResponse {
   ZendeskLoginResponse(this.id, this.externalId);
+
   final String? id;
   final String? externalId;
 }
@@ -45,12 +47,12 @@ class ZendeskMessaging {
 
   /// Allow end-user to use local observer when calling some methods
   static final Map<ZendeskMessagingMessageType, ZendeskMessagingObserver>
-  _observers = {};
+      _observers = {};
 
   /// Attach a global observer for incoming messages
   static void setMessageHandler(
-      Function(ZendeskMessagingMessageType type, Map? arguments)? handler,
-      ) {
+    Function(ZendeskMessagingMessageType type, Map? arguments)? handler,
+  ) {
     _handler = handler;
   }
 
@@ -146,10 +148,10 @@ class ZendeskMessaging {
         ZendeskMessagingMessageType.loginSuccess,
         onSuccess != null
             ? (Map? args) {
-          final id = args?['id'] ?? '';
-          final externalId = args?['externalId'] ?? '';
-          onSuccess(id, externalId);
-        }
+                final id = args?['id'] ?? '';
+                final externalId = args?['externalId'] ?? '';
+                onSuccess(id, externalId);
+              }
             : null,
       );
       _setObserver(
@@ -216,12 +218,16 @@ class ZendeskMessaging {
   /// Listen count of unread messages
   ///
   /// @return  Function onUnreadMessageCountChanged(int) returns function with the unread messages count from the Zendesk SDK
-  static Future<void> listenUnreadMessages(
-      {Function(int?)? onUnreadMessageCountChanged,}) async {
+  static Future<void> listenUnreadMessages({
+    Function(int?)? onUnreadMessageCountChanged,
+  }) async {
     try {
-      _setObserver(ZendeskMessagingMessageType.unreadMessages,
-        onUnreadMessageCountChanged != null ? (Map? args) =>
-            onUnreadMessageCountChanged(args?['messages_count']) : null,
+      _setObserver(
+        ZendeskMessagingMessageType.unreadMessages,
+        onUnreadMessageCountChanged != null
+            ? (Map? args) =>
+                onUnreadMessageCountChanged(args?['messages_count'])
+            : null,
       );
       await _channel.invokeMethod('listenUnreadMessages');
     } catch (e) {
@@ -289,10 +295,10 @@ class ZendeskMessaging {
 
   /// Add an observer for a specific type
   static _setObserver(
-      ZendeskMessagingMessageType type,
-      Function(Map? args)? func, {
-        bool removeOnCall = true,
-      }) {
+    ZendeskMessagingMessageType type,
+    Function(Map? args)? func, {
+    bool removeOnCall = true,
+  }) {
     if (func == null) {
       _observers.remove(type);
     } else {
