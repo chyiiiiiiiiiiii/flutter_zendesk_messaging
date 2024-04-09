@@ -21,8 +21,22 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
         const val loginFailure: String = "login_failure"
         const val logoutSuccess: String = "logout_success"
         const val logoutFailure: String = "logout_failure"
+        const val unreadMessages: String = "unread_messages"
     }
 
+    // To create and use the event listener:
+    val zendeskEventListener = ZendeskEventListener { zendeskEvent ->
+        when (zendeskEvent) {
+            is ZendeskEvent.UnreadMessageCountChanged -> {
+
+                channel.invokeMethod(unreadMessages, mapOf("messages_count" to zendeskEvent.currentUnreadCount))
+
+            }
+            else -> {
+                // Default branch for forward compatibility with Zendesk SDK and its `ZendeskEvent` expansion
+            }
+        }
+    }
 
     fun initialize(channelKey: String) {
         println("$tag - Channel Key - $channelKey")
@@ -44,6 +58,7 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
     }
 
     fun invalidate() {
+        Zendesk.instance.removeEventListener(zendeskEventListener)
         Zendesk.invalidate()
         plugin.isInitialized = false;
         println("$tag - invalidated")
@@ -97,11 +112,17 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
                 }, failureCallback = {
                     channel.invokeMethod(logoutFailure, null)
                 });
+                Zendesk.instance.removeEventListener(zendeskEventListener)
             } catch (error: Throwable) {
                 println("$tag - Logout failure : ${error.message}")
                 channel.invokeMethod(logoutFailure, mapOf("error" to error.message))
             }
         }
+    }
+
+    fun listenMessageCountChanged() {
+        // To add the event listener to your Zendesk instance:
+        Zendesk.instance.addEventListener(zendeskEventListener)
     }
 
     fun setConversationFields(fields: Map<String, String>){
