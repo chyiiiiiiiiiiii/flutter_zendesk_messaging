@@ -217,7 +217,7 @@ class ZendeskMessaging {
 
   /// Listen count of unread messages
   ///
-  /// @return  Function onUnreadMessageCountChanged(int) returns function with the unread messages count from the Zendesk SDK
+  /// @return  Function onUnreadMessageCountChanged(int) - If you need to be notified about the unread messages count changed
   static Future<void> listenUnreadMessages({
     Function(int?)? onUnreadMessageCountChanged,
   }) async {
@@ -228,6 +228,7 @@ class ZendeskMessaging {
             ? (Map? args) =>
                 onUnreadMessageCountChanged(args?['messages_count'])
             : null,
+        removeOnCall: false,
       );
       await _channel.invokeMethod('listenUnreadMessages');
     } catch (e) {
