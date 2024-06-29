@@ -12,17 +12,20 @@ enum ZendeskMessagingMessageType {
   loginFailure,
   logoutSuccess,
   logoutFailure,
+  unreadMessages,
 }
 
 /// Used by ZendeskMessaging to attach custom async observers
 class ZendeskMessagingObserver {
   ZendeskMessagingObserver(this.removeOnCall, this.func);
+
   final bool removeOnCall;
   final Function(Map? args) func;
 }
 
 class ZendeskLoginResponse {
   ZendeskLoginResponse(this.id, this.externalId);
+
   final String? id;
   final String? externalId;
 }
@@ -36,6 +39,7 @@ class ZendeskMessaging {
     'login_failure': ZendeskMessagingMessageType.loginFailure,
     'logout_success': ZendeskMessagingMessageType.logoutSuccess,
     'logout_failure': ZendeskMessagingMessageType.logoutFailure,
+    'unread_messages': ZendeskMessagingMessageType.unreadMessages,
   };
 
   /// Global handler, all channel method calls will trigger this observer
@@ -209,6 +213,27 @@ class ZendeskMessaging {
           completer.completeError(Exception('Zendesk::logoutUser failed')),
     );
     return completer.future;
+  }
+
+  /// Listen count of unread messages
+  ///
+  /// @return  Function onUnreadMessageCountChanged(int) - If you need to be notified about the unread messages count changed
+  static Future<void> listenUnreadMessages({
+    Function(int?)? onUnreadMessageCountChanged,
+  }) async {
+    try {
+      _setObserver(
+        ZendeskMessagingMessageType.unreadMessages,
+        onUnreadMessageCountChanged != null
+            ? (Map? args) =>
+                onUnreadMessageCountChanged(args?['messages_count'])
+            : null,
+        removeOnCall: false,
+      );
+      await _channel.invokeMethod('listenUnreadMessages');
+    } catch (e) {
+      debugPrint('ZendeskMessaging - listenUnreadMessages - Error: $e}');
+    }
   }
 
   /// Retrieve unread messages count from the Zendesk SDK

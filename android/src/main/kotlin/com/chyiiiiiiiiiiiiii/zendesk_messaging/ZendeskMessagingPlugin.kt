@@ -80,6 +80,21 @@ class ZendeskMessagingPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                     return
                 }
                 result.success(zendeskMessaging.getUnreadMessageCount())
+                return
+            }
+            "listenUnreadMessages" -> {
+                if (!isInitialized) {
+                    println("$tag - Messaging needs to be initialized first")
+                    return
+                }
+
+                try {
+                    zendeskMessaging.listenMessageCountChanged()
+                } catch (err: Throwable) {
+                    println("$tag - Messaging::listen unread Messages error")
+                    println(err.message)
+                    return
+                }
             }
             "setConversationTags" -> {
                 if (!isInitialized) {
