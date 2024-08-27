@@ -287,7 +287,12 @@ class ZendeskMessaging {
     // call all observers too
     final observer = _observers[type];
     if (observer != null) {
-      observer.func(call.arguments);
+      final args = call.arguments;
+      if (args is List && args.isEmpty) {
+        observer.func(null);
+      } else {
+        observer.func(call.arguments);
+      }
       if (observer.removeOnCall) {
         _setObserver(type, null);
       }
