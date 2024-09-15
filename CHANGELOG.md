@@ -1,6 +1,8 @@
 ## 2.9.0
 
-* 
+* fix issue for logoutUser in iOS
+* upgrade ios version to 2.24.0
+* downgrade android version to 2.13.0
 
 ## 2.8.0
 
