@@ -6,7 +6,7 @@ void main() {
 }
 
 class MyApp extends StatefulWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
   @override
   State<MyApp> createState() => _MyAppState();
@@ -70,7 +70,8 @@ class _MyAppState extends State<MyApp> {
                   ),
                   ElevatedButton(
                     onPressed: () => _getUnreadMessageCount(),
-                    child: Text('Get unread message count - $unreadMessageCount'),
+                    child:
+                        Text('Get unread message count - $unreadMessageCount'),
                   ),
                 ],
                 ElevatedButton(
@@ -134,26 +135,31 @@ class _MyAppState extends State<MyApp> {
       isLogin = false;
     });
   }
-    void _getUnreadMessageCount() async {
+
+  void _getUnreadMessageCount() async {
     final messageCount = await ZendeskMessaging.getUnreadMessageCount();
     if (mounted) {
       unreadMessageCount = messageCount;
       setState(() {});
     }
   }
+
   void _setTags() async {
     final tags = ['tag1', 'tag2', 'tag3'];
     await ZendeskMessaging.setConversationTags(tags);
   }
+
   void _clearTags() async {
     await ZendeskMessaging.clearConversationTags();
   }
-  void _checkUserLoggedIn()async {
-   final isLoggedIn = await ZendeskMessaging.isLoggedIn();
-   setState(() {
-     channelMessages.add('User is ${isLoggedIn?'':'not'} logged in');
-   });
+
+  void _checkUserLoggedIn() async {
+    final isLoggedIn = await ZendeskMessaging.isLoggedIn();
+    setState(() {
+      channelMessages.add('User is ${isLoggedIn ? '' : 'not'} logged in');
+    });
   }
+
   void _setFields() async {
     Map<String, String> fieldsMap = {};
 
@@ -162,9 +168,11 @@ class _MyAppState extends State<MyApp> {
 
     await ZendeskMessaging.setConversationFields(fieldsMap);
   }
+
   void _clearFields() async {
     await ZendeskMessaging.clearConversationFields();
   }
+
   void _show() {
     ZendeskMessaging.show();
   }

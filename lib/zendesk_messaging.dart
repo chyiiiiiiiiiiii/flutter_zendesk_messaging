@@ -17,10 +17,10 @@ enum ZendeskMessagingMessageType {
 
 /// Used by ZendeskMessaging to attach custom async observers
 class ZendeskMessagingObserver {
-  ZendeskMessagingObserver(this.removeOnCall, this.func);
+  ZendeskMessagingObserver(this.removeOnCall, this.execution);
 
   final bool removeOnCall;
-  final Function(Map? args) func;
+  final Function(Map<String, dynamic>? args) execution;
 }
 
 class ZendeskLoginResponse {
@@ -274,20 +274,24 @@ class ZendeskMessaging {
 
   /// Handle incoming message from platforms (iOS and Android)
   static Future<dynamic> _onMethodCall(final MethodCall call) async {
-    if (!channelMethodToMessageType.containsKey(call.method)) {
+    final method = call.method;
+    final arguments = call.arguments as Map<String, dynamic>?;
+
+    if (!channelMethodToMessageType.containsKey(method)) {
       return;
     }
 
-    final type = channelMethodToMessageType[call.method]!;
+    final type = channelMethodToMessageType[method]!;
     final globalHandler = _handler;
     if (globalHandler != null) {
-      globalHandler(type, call.arguments);
+      globalHandler(type, arguments);
     }
 
     // call all observers too
     final observer = _observers[type];
     if (observer != null) {
-      observer.func(call.arguments);
+      observer.execution(arguments);
+
       if (observer.removeOnCall) {
         _setObserver(type, null);
       }
@@ -297,13 +301,13 @@ class ZendeskMessaging {
   /// Add an observer for a specific type
   static _setObserver(
     ZendeskMessagingMessageType type,
-    Function(Map? args)? func, {
+    void Function(Map<String, dynamic>? args)? execution, {
     bool removeOnCall = true,
   }) {
-    if (func == null) {
+    if (execution == null) {
       _observers.remove(type);
     } else {
-      _observers[type] = ZendeskMessagingObserver(removeOnCall, func);
+      _observers[type] = ZendeskMessagingObserver(removeOnCall, execution);
     }
   }
 

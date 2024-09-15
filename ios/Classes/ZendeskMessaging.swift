@@ -104,7 +104,7 @@ public class ZendeskMessaging: NSObject {
                 switch result {
                 case .success:
                     self.zendeskPlugin?.isLoggedIn = false
-                    self.channel?.invokeMethod(ZendeskMessaging.logoutSuccess, arguments: [])
+                    self.channel?.invokeMethod(ZendeskMessaging.logoutSuccess, arguments: [:])
                     break
                 case .failure(let error):
                     print("\(self.TAG) - logout failure - \(error.localizedDescription)\n")
