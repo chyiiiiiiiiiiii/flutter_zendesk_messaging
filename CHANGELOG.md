@@ -1,3 +1,7 @@
+## 2.9.1
+
+* recover namespace setting for android
+
 ## 2.9.0
 
 * fix issue for logoutUser in iOS
