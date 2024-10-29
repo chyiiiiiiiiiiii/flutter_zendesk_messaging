@@ -54,22 +54,22 @@ public class ZendeskMessaging: NSObject {
         }
 
         // Check if rootViewController is already presenting another view controller
-        if let presentedVC = rootViewController.presentedViewController {
-            // Check if the presentedVC is the same instance as messagingViewController
-            if presentedVC === messagingViewController {
-                // If the same instance, do nothing or update it as necessary
-                print("\(self.TAG) - Zendesk messaging view controller is already presented")
-            } else {
-                // Dismiss current and present new, or just present new
-                presentedVC.dismiss(animated: true) {
-                    rootViewController.present(messagingViewController, animated: true, completion: nil)
-                }
-            }
-        } else {
-            // No view controller is being presented, present the new one
-            rootViewController.present(messagingViewController, animated: true, completion: nil)
-        }
+        let navController = UINavigationController(rootViewController: messagingViewController)
 
+    // Present the navigation controller
+        DispatchQueue.main.async {
+            if let presentedVC = rootViewController.presentedViewController {
+                if presentedVC !== navController {
+                    presentedVC.dismiss(animated: true) {
+                        rootViewController.present(navController, animated: true, completion: nil)
+                    }
+                } else {
+                    print("\(self.TAG) - Zendesk messaging view controller is already presented")
+                }
+            } else {
+                rootViewController.present(navController, animated: true, completion: nil)
+            }
+        }
         print("\(self.TAG) - show")
     }
 
@@ -86,10 +86,12 @@ public class ZendeskMessaging: NSObject {
             DispatchQueue.main.async {
                 switch result {
                 case .success(let user):
+                    let _ = print("success response!")
                     self.zendeskPlugin?.isLoggedIn = true
                     self.channel?.invokeMethod(ZendeskMessaging.loginSuccess, arguments: ["id": user.id, "externalId": user.externalId])
                     break
                 case .failure(let error):
+                    let _ = print("failure response!")
                     print("\(self.TAG) - login failure - \(error.localizedDescription)\n")
                     self.channel?.invokeMethod(ZendeskMessaging.loginFailure, arguments: ["error": nil])
                     break

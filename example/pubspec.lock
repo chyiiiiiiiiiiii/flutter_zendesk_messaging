@@ -206,7 +206,7 @@ packages:
       path: ".."
       relative: true
     source: path
-    version: "2.9.0"
+    version: "2.9.1"
 sdks:
   dart: ">=3.5.0 <4.0.0"
   flutter: ">=3.18.0-18.0.pre.54"
