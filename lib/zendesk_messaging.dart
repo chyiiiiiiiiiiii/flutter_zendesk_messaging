@@ -157,10 +157,7 @@ class ZendeskMessaging {
         ZendeskMessagingMessageType.loginFailure,
         onFailure != null ? (Map? args) => onFailure() : null,
       );
-      debugPrint("starting login function");
-      final result = await _channel.invokeMethod('loginUser', {'jwt': jwt});
-      debugPrint("ending login function");
-      debugPrint(result);
+      await _channel.invokeMethod('loginUser', {'jwt': jwt});
     } catch (e) {
       debugPrint('ZendeskMessaging - loginUser - Error: $e}');
     }

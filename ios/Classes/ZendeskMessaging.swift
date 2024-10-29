@@ -86,12 +86,10 @@ public class ZendeskMessaging: NSObject {
             DispatchQueue.main.async {
                 switch result {
                 case .success(let user):
-                    let _ = print("success response!")
                     self.zendeskPlugin?.isLoggedIn = true
                     self.channel?.invokeMethod(ZendeskMessaging.loginSuccess, arguments: ["id": user.id, "externalId": user.externalId])
                     break
                 case .failure(let error):
-                    let _ = print("failure response!")
                     print("\(self.TAG) - login failure - \(error.localizedDescription)\n")
                     self.channel?.invokeMethod(ZendeskMessaging.loginFailure, arguments: ["error": nil])
                     break
