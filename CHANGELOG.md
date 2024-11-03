@@ -1,3 +1,7 @@
+## 2.9.2
+
+* Fix multi conversation navigation
+
 ## 2.9.1
 
 * recover namespace setting for android
