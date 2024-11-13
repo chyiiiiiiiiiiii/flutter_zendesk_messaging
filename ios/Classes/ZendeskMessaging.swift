@@ -20,7 +20,7 @@ public class ZendeskMessaging: NSObject {
         self.channel = channel
     }
     
-    func initialize(channelKey: String) {
+    func initialize(channelKey: String, flutterResult: @escaping FlutterResult) {
         print("\(self.TAG) - Channel Key - \(channelKey)\n")
         Zendesk.initialize(withChannelKey: channelKey, messagingFactory: DefaultMessagingFactory()) { result in
             DispatchQueue.main.async {
@@ -33,17 +33,18 @@ public class ZendeskMessaging: NSObject {
                     print("\(self.TAG) - initialize success")
                     self.channel?.invokeMethod(ZendeskMessaging.initializeSuccess, arguments: [:])
                 }
+                flutterResult(nil)
             }
         }
     }
 
     func invalidate() {
         Zendesk.invalidate()
-       self.zendeskPlugin?.isInitialized = false
-       print("\(self.TAG) - invalidate")
+        self.zendeskPlugin?.isInitialized = false
+        print("\(self.TAG) - invalidate")
     }
     
-    func show(rootViewController: UIViewController?) {
+    func show(rootViewController: UIViewController?, flutterResult: @escaping FlutterResult) {
         guard let messagingViewController = Zendesk.instance?.messaging?.messagingViewController() as? UIViewController else {
             print("\(self.TAG) - Unable to create Zendesk messaging view controller")
             return
@@ -56,7 +57,7 @@ public class ZendeskMessaging: NSObject {
         // Check if rootViewController is already presenting another view controller
         let navController = UINavigationController(rootViewController: messagingViewController)
 
-    // Present the navigation controller
+        // Present the navigation controller
         DispatchQueue.main.async {
             if let presentedVC = rootViewController.presentedViewController {
                 if presentedVC !== navController {
@@ -69,6 +70,7 @@ public class ZendeskMessaging: NSObject {
             } else {
                 rootViewController.present(navController, animated: true, completion: nil)
             }
+            flutterResult(nil)
         }
         print("\(self.TAG) - show")
     }
@@ -81,36 +83,34 @@ public class ZendeskMessaging: NSObject {
         Zendesk.instance?.messaging?.clearConversationTags()
     }
     
-    func loginUser(jwt: String) {
+    func loginUser(jwt: String, flutterResult: @escaping FlutterResult) {
         Zendesk.instance?.loginUser(with: jwt) { result in
             DispatchQueue.main.async {
                 switch result {
                 case .success(let user):
                     self.zendeskPlugin?.isLoggedIn = true
                     self.channel?.invokeMethod(ZendeskMessaging.loginSuccess, arguments: ["id": user.id, "externalId": user.externalId])
-                    break
                 case .failure(let error):
                     print("\(self.TAG) - login failure - \(error.localizedDescription)\n")
                     self.channel?.invokeMethod(ZendeskMessaging.loginFailure, arguments: ["error": nil])
-                    break
                 }
+                flutterResult(nil)
             }
         }
     }
     
-    func logoutUser() {
+    func logoutUser(flutterResult: @escaping FlutterResult) {
         Zendesk.instance?.logoutUser { result in
             DispatchQueue.main.async {
                 switch result {
                 case .success:
                     self.zendeskPlugin?.isLoggedIn = false
                     self.channel?.invokeMethod(ZendeskMessaging.logoutSuccess, arguments: [:])
-                    break
                 case .failure(let error):
                     print("\(self.TAG) - logout failure - \(error.localizedDescription)\n")
                     self.channel?.invokeMethod(ZendeskMessaging.logoutFailure, arguments: ["error": nil])
-                    break
                 }
+                flutterResult(nil)
             }
         }
     }
