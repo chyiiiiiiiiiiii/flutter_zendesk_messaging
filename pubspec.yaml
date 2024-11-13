@@ -15,7 +15,7 @@ screenshots:
     path: Messaging.png
 
 environment:
-  sdk: ^3.5.0
+  sdk: ^3.0.0
   flutter: ">=3.7.0"
 
 dependencies:
