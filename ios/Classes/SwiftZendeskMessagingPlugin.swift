@@ -37,40 +37,31 @@ public class SwiftZendeskMessagingPlugin: NSObject, FlutterPlugin {
                 }
                 let channelKey: String = (arguments?["channelKey"] ?? "") as! String
                 zendeskMessaging.initialize(channelKey: channelKey, flutterResult: result)
-                break;
             case "show":
                 if (!isInitialized) {
                     print("\(TAG) - Messaging needs to be initialized first.\n")
                 }
                 zendeskMessaging.show(rootViewController: UIApplication.shared.delegate?.window??.rootViewController, flutterResult: result)
-                break
             case "loginUser":
                 if (!isInitialized) {
                     print("\(TAG) - Messaging needs to be initialized first.\n")
                 }
                 let jwt: String = arguments?["jwt"] as! String
                 zendeskMessaging.loginUser(jwt: jwt, flutterResult: result)
-                break
             case "logoutUser":
                 if (!isInitialized) {
                     print("\(TAG) - Messaging needs to be initialized first.\n")
                 }
                 zendeskMessaging.logoutUser(flutterResult: result)
-                break
             case "getUnreadMessageCount":
                 if (!isInitialized) {
                     print("\(TAG) - Messaging needs to be initialized first.\n")
                 }
                 result(handleMessageCount())
-                break
-            
             case "isInitialized":
                 result(handleInitializedStatus())
-                break
             case "isLoggedIn":
                 result(handleLoggedInStatus())
-                break
-            
             case "setConversationTags":
                 if (!isInitialized) {
                     print("\(TAG) - Messaging needs to be initialized first.\n")
@@ -78,14 +69,12 @@ public class SwiftZendeskMessagingPlugin: NSObject, FlutterPlugin {
                 let tags: [String] = arguments?["tags"] as! [String]
                 zendeskMessaging.setConversationTags(tags:tags)
                 result(nil)
-                break
             case "clearConversationTags":
                 if (!isInitialized) {
                     print("\(TAG) - Messaging needs to be initialized first.\n")
                 }
                 zendeskMessaging.clearConversationTags()
                 result(nil)
-                break
             case "setConversationFields":
                 if (!isInitialized) {
                     print("\(TAG) - Messaging needs to be initialized first.\n")
@@ -93,14 +82,12 @@ public class SwiftZendeskMessagingPlugin: NSObject, FlutterPlugin {
                 let fields: [String: String] = arguments?["fields"] as! [String: String]
                 zendeskMessaging.setConversationFields(fields:fields)
                 result(nil)
-                break
             case "clearConversationFields":
                 if (!isInitialized) {
                     print("\(TAG) - Messaging needs to be initialized first.\n")
                 }
                 zendeskMessaging.clearConversationFields()
                 result(nil)
-                break
             case "invalidate":
                 if (!isInitialized) {
                     print("\(TAG) - Messaging is already on an invalid state\n")
@@ -108,7 +95,6 @@ public class SwiftZendeskMessagingPlugin: NSObject, FlutterPlugin {
                 }
                 zendeskMessaging.invalidate()
                 result(nil)
-                break
             default:
                 result(FlutterMethodNotImplemented)
         }

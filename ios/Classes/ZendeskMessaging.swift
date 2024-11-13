@@ -90,11 +90,9 @@ public class ZendeskMessaging: NSObject {
                 case .success(let user):
                     self.zendeskPlugin?.isLoggedIn = true
                     self.channel?.invokeMethod(ZendeskMessaging.loginSuccess, arguments: ["id": user.id, "externalId": user.externalId])
-                    break
                 case .failure(let error):
                     print("\(self.TAG) - login failure - \(error.localizedDescription)\n")
                     self.channel?.invokeMethod(ZendeskMessaging.loginFailure, arguments: ["error": nil])
-                    break
                 }
                 flutterResult(nil)
             }
@@ -108,11 +106,9 @@ public class ZendeskMessaging: NSObject {
                 case .success:
                     self.zendeskPlugin?.isLoggedIn = false
                     self.channel?.invokeMethod(ZendeskMessaging.logoutSuccess, arguments: [:])
-                    break
                 case .failure(let error):
                     print("\(self.TAG) - logout failure - \(error.localizedDescription)\n")
                     self.channel?.invokeMethod(ZendeskMessaging.logoutFailure, arguments: ["error": nil])
-                    break
                 }
                 flutterResult(nil)
             }
