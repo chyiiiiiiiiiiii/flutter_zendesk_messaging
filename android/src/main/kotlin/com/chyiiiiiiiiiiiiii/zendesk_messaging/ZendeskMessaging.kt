@@ -2,11 +2,7 @@ package com.chyiiiiiiiiiiiiii.zendesk_messaging
 
 import android.content.Intent
 import io.flutter.plugin.common.MethodChannel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import zendesk.android.Zendesk
-import zendesk.android.ZendeskUser
 import zendesk.android.events.ZendeskEvent
 import zendesk.android.events.ZendeskEventListener
 import zendesk.messaging.android.DefaultMessagingFactory
@@ -95,39 +91,29 @@ class ZendeskMessaging(
     fun loginUser(jwt: String) {
         Zendesk.instance.loginUser(
             jwt,
-            { value: ZendeskUser? ->
+            { user ->
                 plugin.isLoggedIn = true
-                value?.let {
-                    channel.invokeMethod(
-                        LOGIN_SUCCESS,
-                        mapOf("id" to it.id, "externalId" to it.externalId)
-                    )
-                } ?: run {
-                    channel.invokeMethod(LOGIN_SUCCESS, mapOf("id" to null, "externalId" to null))
-                }
+                channel.invokeMethod(
+                    LOGIN_SUCCESS,
+                    mapOf("id" to user.id, "externalId" to user.externalId)
+                )
             },
-            { error: Throwable? ->
-                println("$TAG - Login failure : ${error?.message}")
+            { error ->
+                println("$TAG - Login failure : ${error.message}")
                 println(error)
-                channel.invokeMethod(LOGIN_FAILURE, mapOf("error" to error?.message))
+                channel.invokeMethod(LOGIN_FAILURE, mapOf("error" to error.message))
             })
     }
 
     fun logoutUser() {
-        GlobalScope.launch(Dispatchers.Main) {
-            try {
-                Zendesk.instance.logoutUser(successCallback = {
-                    plugin.isLoggedIn = false
-                    channel.invokeMethod(LOGOUT_SUCCESS, null)
-                }, failureCallback = {
-                    channel.invokeMethod(LOGOUT_FAILURE, null)
-                })
-                Zendesk.instance.removeEventListener(zendeskEventListener)
-            } catch (error: Throwable) {
-                println("$TAG - Logout failure : ${error.message}")
-                channel.invokeMethod(LOGOUT_FAILURE, mapOf("error" to error.message))
-            }
-        }
+        Zendesk.instance.logoutUser(successCallback = {
+            plugin.isLoggedIn = false
+            channel.invokeMethod(LOGOUT_SUCCESS, null)
+        }, failureCallback = { error ->
+            println("$TAG - Logout failure : ${error.message}")
+            channel.invokeMethod(LOGOUT_FAILURE, mapOf("error" to error.message))
+        })
+        Zendesk.instance.removeEventListener(zendeskEventListener)
     }
 
     fun listenMessageCountChanged() {
