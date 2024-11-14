@@ -36,74 +36,65 @@ public class SwiftZendeskMessagingPlugin: NSObject, FlutterPlugin {
                     return
                 }
                 let channelKey: String = (arguments?["channelKey"] ?? "") as! String
-                zendeskMessaging.initialize(channelKey: channelKey)
-                break;
+                zendeskMessaging.initialize(channelKey: channelKey, flutterResult: result)
             case "show":
                 if (!isInitialized) {
                     print("\(TAG) - Messaging needs to be initialized first.\n")
                 }
-                zendeskMessaging.show(rootViewController: UIApplication.shared.delegate?.window??.rootViewController)
-                break
+                zendeskMessaging.show(rootViewController: UIApplication.shared.delegate?.window??.rootViewController, flutterResult: result)
             case "loginUser":
                 if (!isInitialized) {
                     print("\(TAG) - Messaging needs to be initialized first.\n")
                 }
                 let jwt: String = arguments?["jwt"] as! String
-                zendeskMessaging.loginUser(jwt: jwt)
-                break
+                zendeskMessaging.loginUser(jwt: jwt, flutterResult: result)
             case "logoutUser":
                 if (!isInitialized) {
                     print("\(TAG) - Messaging needs to be initialized first.\n")
                 }
-                zendeskMessaging.logoutUser()
-                break
+                zendeskMessaging.logoutUser(flutterResult: result)
             case "getUnreadMessageCount":
                 if (!isInitialized) {
                     print("\(TAG) - Messaging needs to be initialized first.\n")
                 }
                 result(handleMessageCount())
-                break
-            
             case "isInitialized":
                 result(handleInitializedStatus())
-                break
             case "isLoggedIn":
                 result(handleLoggedInStatus())
-                break
-            
             case "setConversationTags":
                 if (!isInitialized) {
                     print("\(TAG) - Messaging needs to be initialized first.\n")
                 }
                 let tags: [String] = arguments?["tags"] as! [String]
                 zendeskMessaging.setConversationTags(tags:tags)
-                break
+                result(nil)
             case "clearConversationTags":
                 if (!isInitialized) {
                     print("\(TAG) - Messaging needs to be initialized first.\n")
                 }
                 zendeskMessaging.clearConversationTags()
-                break
+                result(nil)
             case "setConversationFields":
                 if (!isInitialized) {
                     print("\(TAG) - Messaging needs to be initialized first.\n")
                 }
                 let fields: [String: String] = arguments?["fields"] as! [String: String]
                 zendeskMessaging.setConversationFields(fields:fields)
-                break
+                result(nil)
             case "clearConversationFields":
                 if (!isInitialized) {
                     print("\(TAG) - Messaging needs to be initialized first.\n")
                 }
                 zendeskMessaging.clearConversationFields()
-                break
+                result(nil)
             case "invalidate":
                 if (!isInitialized) {
                     print("\(TAG) - Messaging is already on an invalid state\n")
                     return
                 }
                 zendeskMessaging.invalidate()
-                break
+                result(nil)
             default:
                 result(FlutterMethodNotImplemented)
         }

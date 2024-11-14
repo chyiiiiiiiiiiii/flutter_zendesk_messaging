@@ -1,3 +1,9 @@
+## 2.9.3
+
+* Update Dart SDK minimum version to 3.0.0 .
+* Update Flutter SDK minimum version to 3.10.0 .
+* Fix method channel calls never complete.
+
 ## 2.9.2
 
 * Fix multi conversation navigation

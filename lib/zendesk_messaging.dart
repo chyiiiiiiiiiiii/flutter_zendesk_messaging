@@ -267,7 +267,7 @@ class ZendeskMessaging {
   /// Handle incoming message from platforms (iOS and Android)
   static Future<dynamic> _onMethodCall(final MethodCall call) async {
     final method = call.method;
-    final arguments = call.arguments as Map<String, dynamic>?;
+    final arguments = Map<String, dynamic>.from(call.arguments);
 
     if (!channelMethodToMessageType.containsKey(method)) {
       return;
