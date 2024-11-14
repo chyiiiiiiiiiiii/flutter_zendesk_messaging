@@ -19,13 +19,13 @@ class ZendeskMessaging(
         const val TAG = "[ZendeskMessaging]"
 
         // Method channel callback keys
-        const val initializeSuccess: String = "initialize_success"
-        const val initializeFailure: String = "initialize_failure"
-        const val loginSuccess: String = "login_success"
-        const val loginFailure: String = "login_failure"
-        const val logoutSuccess: String = "logout_success"
-        const val logoutFailure: String = "logout_failure"
-        const val unreadMessages: String = "unread_messages"
+        const val INITIALIZE_SUCCESS: String = "initialize_success"
+        const val INITIALIZE_FAILURE: String = "initialize_failure"
+        const val LOGIN_SUCCESS: String = "login_success"
+        const val LOGIN_FAILURE: String = "login_failure"
+        const val LOGOUT_SUCCESS: String = "logout_success"
+        const val LOGOUT_FAILURE: String = "logout_failure"
+        const val UNREAD_MESSAGES: String = "unread_messages"
     }
 
     // To create and use the event listener:
@@ -34,7 +34,7 @@ class ZendeskMessaging(
             is ZendeskEvent.UnreadMessageCountChanged -> {
 
                 channel.invokeMethod(
-                    unreadMessages,
+                    UNREAD_MESSAGES,
                     mapOf("messages_count" to zendeskEvent.currentUnreadCount)
                 )
 
@@ -54,12 +54,12 @@ class ZendeskMessaging(
             successCallback = { value ->
                 plugin.isInitialized = true
                 println("$TAG - initialize success - $value")
-                channel.invokeMethod(initializeSuccess, null)
+                channel.invokeMethod(INITIALIZE_SUCCESS, null)
             },
             failureCallback = { error ->
                 plugin.isInitialized = false
                 println("$TAG - initialize failure - $error")
-                channel.invokeMethod(initializeFailure, mapOf("error" to error.message))
+                channel.invokeMethod(INITIALIZE_FAILURE, mapOf("error" to error.message))
             },
             messagingFactory = DefaultMessagingFactory()
         )
@@ -99,17 +99,17 @@ class ZendeskMessaging(
                 plugin.isLoggedIn = true
                 value?.let {
                     channel.invokeMethod(
-                        loginSuccess,
+                        LOGIN_SUCCESS,
                         mapOf("id" to it.id, "externalId" to it.externalId)
                     )
                 } ?: run {
-                    channel.invokeMethod(loginSuccess, mapOf("id" to null, "externalId" to null))
+                    channel.invokeMethod(LOGIN_SUCCESS, mapOf("id" to null, "externalId" to null))
                 }
             },
             { error: Throwable? ->
                 println("$TAG - Login failure : ${error?.message}")
                 println(error)
-                channel.invokeMethod(loginFailure, mapOf("error" to error?.message))
+                channel.invokeMethod(LOGIN_FAILURE, mapOf("error" to error?.message))
             })
     }
 
@@ -118,14 +118,14 @@ class ZendeskMessaging(
             try {
                 Zendesk.instance.logoutUser(successCallback = {
                     plugin.isLoggedIn = false
-                    channel.invokeMethod(logoutSuccess, null)
+                    channel.invokeMethod(LOGOUT_SUCCESS, null)
                 }, failureCallback = {
-                    channel.invokeMethod(logoutFailure, null)
+                    channel.invokeMethod(LOGOUT_FAILURE, null)
                 })
                 Zendesk.instance.removeEventListener(zendeskEventListener)
             } catch (error: Throwable) {
                 println("$TAG - Logout failure : ${error.message}")
-                channel.invokeMethod(logoutFailure, mapOf("error" to error.message))
+                channel.invokeMethod(LOGOUT_FAILURE, mapOf("error" to error.message))
             }
         }
     }
