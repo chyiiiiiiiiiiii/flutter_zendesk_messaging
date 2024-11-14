@@ -1,5 +1,6 @@
+package com.chyiiiiiiiiiiiiii.zendesk_messaging
+
 import android.content.Intent
-import com.chyiiiiiiiiiiiiii.zendesk_messaging.ZendeskMessagingPlugin
 import io.flutter.plugin.common.MethodChannel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -9,7 +10,6 @@ import zendesk.android.ZendeskUser
 import zendesk.android.events.ZendeskEvent
 import zendesk.android.events.ZendeskEventListener
 import zendesk.messaging.android.DefaultMessagingFactory
-
 
 class ZendeskMessaging(
     private val plugin: ZendeskMessagingPlugin,

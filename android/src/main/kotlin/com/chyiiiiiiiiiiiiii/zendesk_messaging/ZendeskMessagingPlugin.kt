@@ -1,6 +1,5 @@
 package com.chyiiiiiiiiiiiiii.zendesk_messaging
 
-import ZendeskMessaging
 import android.app.Activity
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
@@ -28,7 +27,7 @@ class ZendeskMessagingPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
         when (call.method) {
             "initialize" -> {
                 if (isInitialized) {
-                    println("$tag - Messaging is already initialized!")
+                    println("$tag - Zendesk SDK is already initialized!")
                     reportAlreadyInitializedFlutterError(result)
                     return
                 }
@@ -39,7 +38,7 @@ class ZendeskMessagingPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
 
             "show" -> {
                 if (!isInitialized) {
-                    println("$tag - Messaging needs to be initialized first")
+                    println("$tag - Zendesk SDK needs to be initialized first")
                     reportNotInitializedFlutterError(result)
                     return
                 }
@@ -57,7 +56,7 @@ class ZendeskMessagingPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
 
             "loginUser" -> {
                 if (!isInitialized) {
-                    println("$tag - Messaging needs to be initialized first")
+                    println("$tag - Zendesk SDK needs to be initialized first")
                     reportNotInitializedFlutterError(result)
                     return
                 }
@@ -70,7 +69,7 @@ class ZendeskMessagingPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                     zendeskMessaging.loginUser(jwt)
                     result.success(null)
                 } catch (err: Throwable) {
-                    println("$tag - Messaging::login invalid arguments. {'jwt': '<your_jwt>'} expected !")
+                    println("$tag - ZendeskMessaging::login invalid arguments. {'jwt': '<your_jwt>'} expected !")
                     println(err.message)
                     result.error("login_error", err.message, null)
                 }
@@ -78,7 +77,7 @@ class ZendeskMessagingPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
 
             "logoutUser" -> {
                 if (!isInitialized) {
-                    println("$tag - Messaging needs to be initialized first")
+                    println("$tag - Zendesk SDK needs to be initialized first")
                     reportNotInitializedFlutterError(result)
                     return
                 }
@@ -88,7 +87,7 @@ class ZendeskMessagingPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
 
             "getUnreadMessageCount" -> {
                 if (!isInitialized) {
-                    println("$tag - Messaging needs to be initialized first")
+                    println("$tag - Zendesk SDK needs to be initialized first")
                     reportNotInitializedFlutterError(result)
                     return
                 }
@@ -97,7 +96,7 @@ class ZendeskMessagingPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
 
             "listenUnreadMessages" -> {
                 if (!isInitialized) {
-                    println("$tag - Messaging needs to be initialized first")
+                    println("$tag - Zendesk SDK needs to be initialized first")
                     reportNotInitializedFlutterError(result)
                     return
                 }
@@ -106,7 +105,7 @@ class ZendeskMessagingPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                     zendeskMessaging.listenMessageCountChanged()
                     result.success(null)
                 } catch (err: Throwable) {
-                    println("$tag - Messaging::listen unread Messages error")
+                    println("$tag - ZendeskMessaging::listen unread Messages error")
                     println(err.message)
                     result.error("listen_unread_messages_error", err.message, null)
                 }
@@ -114,7 +113,7 @@ class ZendeskMessagingPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
 
             "setConversationTags" -> {
                 if (!isInitialized) {
-                    println("$tag - Messaging needs to be initialized first")
+                    println("$tag - Zendesk SDK needs to be initialized first")
                     reportNotInitializedFlutterError(result)
                     return
                 }
@@ -126,7 +125,7 @@ class ZendeskMessagingPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                     zendeskMessaging.setConversationTags(tags)
                     result.success(null)
                 } catch (err: Throwable) {
-                    println("$tag - Messaging::setConversationTags invalid arguments. {'tags': '<your_tags>'} expected !")
+                    println("$tag - ZendeskMessaging::setConversationTags invalid arguments. {'tags': '<your_tags>'} expected !")
                     println(err.message)
                     result.error("set_conversation_tags_error", err.message, null)
                 }
@@ -134,7 +133,7 @@ class ZendeskMessagingPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
 
             "clearConversationTags" -> {
                 if (!isInitialized) {
-                    println("$tag - Messaging needs to be initialized first")
+                    println("$tag - Zendesk SDK needs to be initialized first")
                     reportNotInitializedFlutterError(result)
                     return
                 }
@@ -144,7 +143,7 @@ class ZendeskMessagingPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
 
             "setConversationFields" -> {
                 if (!isInitialized) {
-                    println("$tag - Messaging needs to be initialized first")
+                    println("$tag - Zendesk SDK needs to be initialized first")
                     reportNotInitializedFlutterError(result)
                     return
                 }
@@ -156,7 +155,7 @@ class ZendeskMessagingPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                     zendeskMessaging.setConversationFields(fields)
                     result.success(null)
                 } catch (err: Throwable) {
-                    println("$tag - Messaging::setConversationFields invalid arguments. {'fields': Map<String, String>}. expected !")
+                    println("$tag - ZendeskMessaging::setConversationFields invalid arguments. {'fields': Map<String, String>}. expected !")
                     println(err.message)
                     result.error("set_conversation_fields_error", err.message, null)
                 }
@@ -164,7 +163,7 @@ class ZendeskMessagingPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
 
             "clearConversationFields" -> {
                 if (!isInitialized) {
-                    println("$tag - Messaging needs to be initialized first")
+                    println("$tag - Zendesk SDK needs to be initialized first")
                     reportNotInitializedFlutterError(result)
                     return
                 }
@@ -174,7 +173,7 @@ class ZendeskMessagingPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
 
             "invalidate" -> {
                 if (!isInitialized) {
-                    println("$tag - Messaging is already on an invalid state")
+                    println("$tag - Zendesk SDK is already on an invalid state")
                     reportNotInitializedFlutterError(result)
                     return
                 }
@@ -197,7 +196,7 @@ class ZendeskMessagingPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
     private fun reportAlreadyInitializedFlutterError(result: MethodChannel.Result) {
         result.error(
             "already_initialized",
-            "ZendeskMessaging is already initialized",
+            "Zendesk SDK is already initialized",
             null
         )
     }
@@ -205,7 +204,7 @@ class ZendeskMessagingPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
     private fun reportNotInitializedFlutterError(result: MethodChannel.Result) {
         result.error(
             "not_initialized",
-            "ZendeskMessaging needs to be initialized first",
+            "Zendesk SDK needs to be initialized first",
             null
         )
     }
