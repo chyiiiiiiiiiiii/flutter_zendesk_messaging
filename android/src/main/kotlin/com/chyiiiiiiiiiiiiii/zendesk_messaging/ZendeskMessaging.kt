@@ -5,16 +5,18 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import zendesk.android.Zendesk
-import zendesk.android.ZendeskResult
 import zendesk.android.ZendeskUser
-import zendesk.messaging.android.DefaultMessagingFactory
 import zendesk.android.events.ZendeskEvent
 import zendesk.android.events.ZendeskEventListener
+import zendesk.messaging.android.DefaultMessagingFactory
 
 
-class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val channel: MethodChannel) {
+class ZendeskMessaging(
+    private val plugin: ZendeskMessagingPlugin,
+    private val channel: MethodChannel
+) {
     companion object {
-        const val tag = "[ZendeskMessaging]"
+        const val TAG = "[ZendeskMessaging]"
 
         // Method channel callback keys
         const val initializeSuccess: String = "initialize_success"
@@ -27,13 +29,17 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
     }
 
     // To create and use the event listener:
-    val zendeskEventListener = ZendeskEventListener { zendeskEvent ->
+    private val zendeskEventListener = ZendeskEventListener { zendeskEvent ->
         when (zendeskEvent) {
             is ZendeskEvent.UnreadMessageCountChanged -> {
 
-                channel.invokeMethod(unreadMessages, mapOf("messages_count" to zendeskEvent.currentUnreadCount))
+                channel.invokeMethod(
+                    unreadMessages,
+                    mapOf("messages_count" to zendeskEvent.currentUnreadCount)
+                )
 
             }
+
             else -> {
                 // Default branch for forward compatibility with Zendesk SDK and its `ZendeskEvent` expansion
             }
@@ -41,18 +47,18 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
     }
 
     fun initialize(channelKey: String) {
-        println("$tag - Channel Key - $channelKey")
+        println("$TAG - Channel Key - $channelKey")
         Zendesk.initialize(
             plugin.activity!!,
             channelKey,
             successCallback = { value ->
-                plugin.isInitialized = true;
-                println("$tag - initialize success - $value")
+                plugin.isInitialized = true
+                println("$TAG - initialize success - $value")
                 channel.invokeMethod(initializeSuccess, null)
             },
             failureCallback = { error ->
-                plugin.isInitialized = false;
-                println("$tag - initialize failure - $error")
+                plugin.isInitialized = false
+                println("$TAG - initialize failure - $error")
                 channel.invokeMethod(initializeFailure, mapOf("error" to error.message))
             },
             messagingFactory = DefaultMessagingFactory()
@@ -62,28 +68,27 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
     fun invalidate() {
         Zendesk.instance.removeEventListener(zendeskEventListener)
         Zendesk.invalidate()
-        plugin.isInitialized = false;
-        println("$tag - invalidated")
+        plugin.isInitialized = false
+        println("$TAG - invalidated")
     }
 
     fun show() {
         Zendesk.instance.messaging.showMessaging(plugin.activity!!, Intent.FLAG_ACTIVITY_NEW_TASK)
-        println("$tag - show")
+        println("$TAG - show")
     }
 
-    fun getUnreadMessageCount(): Int {
-        return try {
+    fun getUnreadMessageCount(): Int =
+        try {
             Zendesk.instance.messaging.getUnreadMessageCount()
-        }catch (error: Throwable){
+        } catch (error: Throwable) {
             0
         }
-    }
 
-    fun setConversationTags(tags: List<String>){
+    fun setConversationTags(tags: List<String>) {
         Zendesk.instance.messaging.setConversationTags(tags)
     }
 
-    fun clearConversationTags(){
+    fun clearConversationTags() {
         Zendesk.instance.messaging.clearConversationTags()
     }
 
@@ -91,32 +96,35 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
         Zendesk.instance.loginUser(
             jwt,
             { value: ZendeskUser? ->
-                plugin.isLoggedIn = true;
+                plugin.isLoggedIn = true
                 value?.let {
-                    channel.invokeMethod(loginSuccess, mapOf("id" to it.id, "externalId" to it.externalId))
+                    channel.invokeMethod(
+                        loginSuccess,
+                        mapOf("id" to it.id, "externalId" to it.externalId)
+                    )
                 } ?: run {
                     channel.invokeMethod(loginSuccess, mapOf("id" to null, "externalId" to null))
                 }
             },
             { error: Throwable? ->
-                println("$tag - Login failure : ${error?.message}")
+                println("$TAG - Login failure : ${error?.message}")
                 println(error)
                 channel.invokeMethod(loginFailure, mapOf("error" to error?.message))
             })
     }
 
     fun logoutUser() {
-        GlobalScope.launch (Dispatchers.Main)  {
+        GlobalScope.launch(Dispatchers.Main) {
             try {
                 Zendesk.instance.logoutUser(successCallback = {
-                    plugin.isLoggedIn = false;
+                    plugin.isLoggedIn = false
                     channel.invokeMethod(logoutSuccess, null)
                 }, failureCallback = {
                     channel.invokeMethod(logoutFailure, null)
-                });
+                })
                 Zendesk.instance.removeEventListener(zendeskEventListener)
             } catch (error: Throwable) {
-                println("$tag - Logout failure : ${error.message}")
+                println("$TAG - Logout failure : ${error.message}")
                 channel.invokeMethod(logoutFailure, mapOf("error" to error.message))
             }
         }
@@ -127,11 +135,11 @@ class ZendeskMessaging(private val plugin: ZendeskMessagingPlugin, private val c
         Zendesk.instance.addEventListener(zendeskEventListener)
     }
 
-    fun setConversationFields(fields: Map<String, String>){
+    fun setConversationFields(fields: Map<String, String>) {
         Zendesk.instance.messaging.setConversationFields(fields)
     }
 
-    fun clearConversationFields(){
+    fun clearConversationFields() {
         Zendesk.instance.messaging.clearConversationFields()
     }
 }
