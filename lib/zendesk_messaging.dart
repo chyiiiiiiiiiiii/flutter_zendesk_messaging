@@ -46,7 +46,8 @@ class ZendeskMessaging {
   static Function(ZendeskMessagingMessageType type, Map? arguments)? _handler;
 
   /// Allow end-user to use local observer when calling some methods
-  static final Map<ZendeskMessagingMessageType, ZendeskMessagingObserver> _observers = {};
+  static final Map<ZendeskMessagingMessageType, ZendeskMessagingObserver>
+      _observers = {};
 
   /// Attach a global observer for incoming messages
   static void setMessageHandler(
@@ -75,10 +76,17 @@ class ZendeskMessaging {
       await _channel.invokeMethod('initialize', {
         'channelKey': Platform.isAndroid ? androidChannelKey : iosChannelKey,
       });
-      return;
+      final Completer<void> completer = Completer();
+      _setObserver(ZendeskMessagingMessageType.initializeSuccess, (_) {
+        completer.complete();
+      });
+      _setObserver(ZendeskMessagingMessageType.initializeFailure, (args) {
+        completer.completeError(PlatformException(
+            code: 'initialize_error', message: args?['error'] as String?));
+      });
+      return completer.future.timeout(const Duration(seconds: 3));
     } catch (e) {
       debugPrint('ZendeskMessaging - initialize - Error: $e}');
-      return;
     }
   }
 
@@ -170,8 +178,10 @@ class ZendeskMessaging {
     final completer = Completer<ZendeskLoginResponse>();
     await loginUserCallbacks(
       jwt: jwt,
-      onSuccess: (id, externalId) => completer.complete(ZendeskLoginResponse(id, externalId)),
-      onFailure: () => completer.completeError(Exception('Zendesk::loginUser failed')),
+      onSuccess: (id, externalId) =>
+          completer.complete(ZendeskLoginResponse(id, externalId)),
+      onFailure: () =>
+          completer.completeError(Exception('Zendesk::loginUser failed')),
     );
     return completer.future;
   }
@@ -205,7 +215,8 @@ class ZendeskMessaging {
     final completer = Completer<void>();
     await logoutUserCallbacks(
       onSuccess: completer.complete,
-      onFailure: () => completer.completeError(Exception('Zendesk::logoutUser failed')),
+      onFailure: () =>
+          completer.completeError(Exception('Zendesk::logoutUser failed')),
     );
     return completer.future;
   }
@@ -219,7 +230,10 @@ class ZendeskMessaging {
     try {
       _setObserver(
         ZendeskMessagingMessageType.unreadMessages,
-        onUnreadMessageCountChanged != null ? (Map? args) => onUnreadMessageCountChanged(args?['messages_count']) : null,
+        onUnreadMessageCountChanged != null
+            ? (Map? args) =>
+                onUnreadMessageCountChanged(args?['messages_count'])
+            : null,
         removeOnCall: false,
       );
       await _channel.invokeMethod('listenUnreadMessages');
