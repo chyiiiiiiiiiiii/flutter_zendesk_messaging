@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:zendesk_messaging/zendesk_messaging.dart';
 
@@ -17,6 +19,7 @@ class _MyAppState extends State<MyApp> {
   static const String iosChannelKey = "your iOS key";
 
   final List<String> channelMessages = [];
+  StreamSubscription<int>? unreadMessagesCountSubscription;
 
   bool isLogin = false;
   int unreadMessageCount = 0;
@@ -29,6 +32,7 @@ class _MyAppState extends State<MyApp> {
   @override
   void dispose() {
     ZendeskMessaging.invalidate();
+    unreadMessagesCountSubscription?.cancel();
     super.dispose();
   }
 
@@ -66,6 +70,11 @@ class _MyAppState extends State<MyApp> {
                     onPressed: () => _getUnreadMessageCount(),
                     child:
                         Text('Get unread message count - $unreadMessageCount'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () => _listenUnreadMessageCount(),
+                    child: Text(
+                        'Listen unread message count - $unreadMessageCount'),
                   ),
                 ],
                 ElevatedButton(
@@ -128,6 +137,7 @@ class _MyAppState extends State<MyApp> {
   Future<void> _logout() async {
     try {
       await ZendeskMessaging.logoutUser();
+      unreadMessagesCountSubscription?.cancel();
     } catch (_) {}
     setState(() {
       isLogin = false;
@@ -140,6 +150,18 @@ class _MyAppState extends State<MyApp> {
       unreadMessageCount = messageCount;
       setState(() {});
     }
+  }
+
+  void _listenUnreadMessageCount() async {
+    await ZendeskMessaging.listenUnreadMessages();
+
+    unreadMessagesCountSubscription =
+        ZendeskMessaging.unreadMessagesCountStream.listen((unreadCount) {
+      print('unread count changed: $unreadCount');
+      setState(() {
+        unreadMessageCount = unreadCount;
+      });
+    });
   }
 
   void _setTags() async {
