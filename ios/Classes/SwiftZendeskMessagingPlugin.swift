@@ -49,7 +49,7 @@ public class SwiftZendeskMessagingPlugin: NSObject, FlutterPlugin {
                 reportNotInitializedFlutterError(result: result)
                 return
             }
-            let jwt: String = arguments?["jwt"] as! String
+            let jwt: String = arguments?["jwt"] as? String ?? ""
             zendeskMessaging?.loginUser(jwt: jwt, flutterResult: result)
         case "logoutUser":
             if (!isInitialized) {
