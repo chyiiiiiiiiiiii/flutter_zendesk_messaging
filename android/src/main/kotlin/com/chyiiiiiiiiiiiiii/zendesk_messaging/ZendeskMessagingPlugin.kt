@@ -15,15 +15,21 @@ class ZendeskMessagingPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
     /// This local reference serves to register the plugin with the Flutter Engine and unregister it
     /// when the Flutter Engine is detached from the Activity
     private val tag = "[ZendeskMessagingPlugin]"
+
     private lateinit var channel: MethodChannel
+    private lateinit var zendeskMessaging: ZendeskMessaging
+
     var activity: Activity? = null
     var isInitialized: Boolean = false
     var isLoggedIn: Boolean = false
 
-    override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
-        val sendData: Any? = call.arguments
-        val zendeskMessaging = ZendeskMessaging(this, channel)
+    override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
+        channel = MethodChannel(flutterPluginBinding.binaryMessenger, "zendesk_messaging")
+        channel.setMethodCallHandler(this)
+        zendeskMessaging = ZendeskMessaging(this, channel)
+    }
 
+    override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
         when (call.method) {
             "initialize" -> {
                 if (isInitialized) {
@@ -185,12 +191,6 @@ class ZendeskMessagingPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                 result.notImplemented()
             }
         }
-
-        if (sendData != null) {
-            result.success(sendData)
-        } else {
-            result.success(0)
-        }
     }
 
     private fun reportAlreadyInitializedFlutterError(result: MethodChannel.Result) {
@@ -207,11 +207,6 @@ class ZendeskMessagingPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
             "Zendesk SDK needs to be initialized first",
             null
         )
-    }
-
-    override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
-        channel = MethodChannel(flutterPluginBinding.binaryMessenger, "zendesk_messaging")
-        channel.setMethodCallHandler(this)
     }
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
