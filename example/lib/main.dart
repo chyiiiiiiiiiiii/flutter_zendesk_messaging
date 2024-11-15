@@ -111,13 +111,20 @@ class _MyAppState extends State<MyApp> {
   Future<void> _login() async {
     // You can attach local observer when calling some methods to be notified when ready
     try {
-      final response = await ZendeskMessaging.loginUser(jwt: 'my_jwt');
-      channelMessages.add(
-          "Login observer - SUCCESS: ${response.id}, ${response.externalId}");
-      isLogin = true;
+      final response = await ZendeskMessaging.loginUser(
+        jwt:
+            'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiIsImtpZCI6ImFwcF82NzI4NDRmYmVhYjdjODAyMGI0NDNhYzkifQ.eyJleHRlcm5hbF9pZCI6IjY0NjQ4M2Y3NzlmOWVmOTM3ZmZlMTY3YyIsIm5hbWUiOiJ3YWdneXQiLCJzY29wZSI6InVzZXIifQ.E4neOzbw0aU7IPMJQxD3UFnOXOmQgMRRUlogCEaVbmU',
+      );
+      setState(() {
+        channelMessages.add(
+            "Login observer - SUCCESS: ${response.id}, ${response.externalId}");
+        isLogin = true;
+      });
     } catch (e) {
-      channelMessages.add("Login observer - FAILURE!");
-      isLogin = false;
+      setState(() {
+        channelMessages.add("Login observer - FAILURE!");
+        isLogin = false;
+      });
     }
   }
 
