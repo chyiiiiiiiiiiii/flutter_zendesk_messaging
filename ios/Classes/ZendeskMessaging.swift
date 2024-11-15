@@ -3,17 +3,10 @@ import ZendeskSDKMessaging
 import ZendeskSDK
 
 public class ZendeskMessaging: NSObject {
-    private static var initializeSuccess: String = "initialize_success"
-    private static var initializeFailure: String = "initialize_failure"
-    private static var loginSuccess: String = "login_success"
-    private static var loginFailure: String = "login_failure"
-    private static var logoutSuccess: String = "logout_success"
-    private static var logoutFailure: String = "logout_failure"
-    
     let TAG = "[ZendeskMessaging]"
     
-    private var zendeskPlugin: SwiftZendeskMessagingPlugin? = nil
-    private var channel: FlutterMethodChannel? = nil
+    private weak var zendeskPlugin: SwiftZendeskMessagingPlugin?
+    private let channel: FlutterMethodChannel
 
     init(flutterPlugin: SwiftZendeskMessagingPlugin, channel: FlutterMethodChannel) {
         self.zendeskPlugin = flutterPlugin
@@ -27,13 +20,17 @@ public class ZendeskMessaging: NSObject {
                 if case let .failure(error) = result {
                     self.zendeskPlugin?.isInitialized = false
                     print("\(self.TAG) - initialize failure - \(error.localizedDescription)\n")
-                    self.channel?.invokeMethod(ZendeskMessaging.initializeFailure, arguments: ["error": error.localizedDescription])
+                    flutterResult(FlutterError(
+                        code: "initialize_error",
+                        message: error.localizedDescription,
+                        details: nil)
+                    )
                 } else {
                     self.zendeskPlugin?.isInitialized = true
                     print("\(self.TAG) - initialize success")
-                    self.channel?.invokeMethod(ZendeskMessaging.initializeSuccess, arguments: [:])
+                    flutterResult(nil)
                 }
-                flutterResult(nil)
+                
             }
         }
     }
@@ -47,10 +44,20 @@ public class ZendeskMessaging: NSObject {
     func show(rootViewController: UIViewController?, flutterResult: @escaping FlutterResult) {
         guard let messagingViewController = Zendesk.instance?.messaging?.messagingViewController() as? UIViewController else {
             print("\(self.TAG) - Unable to create Zendesk messaging view controller")
+            flutterResult(FlutterError(
+                code: "show_error",
+                message: "Unable to create Zendesk messaging view controller",
+                details: nil)
+            )
             return
         }
         guard let rootViewController = rootViewController else {
             print("\(self.TAG) - Root view controller is nil")
+            flutterResult(FlutterError(
+                code: "show_error",
+                message: "Root view controller is nil",
+                details: nil)
+            )
             return
         }
 
@@ -89,12 +96,19 @@ public class ZendeskMessaging: NSObject {
                 switch result {
                 case .success(let user):
                     self.zendeskPlugin?.isLoggedIn = true
-                    self.channel?.invokeMethod(ZendeskMessaging.loginSuccess, arguments: ["id": user.id, "externalId": user.externalId])
+                    flutterResult([
+                        "id": user.id,
+                        "externalId": user.externalId
+                    ])
                 case .failure(let error):
                     print("\(self.TAG) - login failure - \(error.localizedDescription)\n")
-                    self.channel?.invokeMethod(ZendeskMessaging.loginFailure, arguments: ["error": nil])
+                    flutterResult(FlutterError(
+                        code: "login_error",
+                        message: error.localizedDescription,
+                        details: nil)
+                    )
                 }
-                flutterResult(nil)
+                
             }
         }
     }
@@ -105,12 +119,15 @@ public class ZendeskMessaging: NSObject {
                 switch result {
                 case .success:
                     self.zendeskPlugin?.isLoggedIn = false
-                    self.channel?.invokeMethod(ZendeskMessaging.logoutSuccess, arguments: [:])
+                    flutterResult(nil)
                 case .failure(let error):
                     print("\(self.TAG) - logout failure - \(error.localizedDescription)\n")
-                    self.channel?.invokeMethod(ZendeskMessaging.logoutFailure, arguments: ["error": nil])
+                    flutterResult(FlutterError(
+                        code: "logout_error",
+                        message: error.localizedDescription,
+                        details: nil)
+                    )
                 }
-                flutterResult(nil)
             }
         }
     }
