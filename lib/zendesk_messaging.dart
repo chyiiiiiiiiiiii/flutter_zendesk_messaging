@@ -4,25 +4,6 @@ import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 
-/// Message type emitted by native platforms
-enum ZendeskMessagingMessageType {
-  initializeSuccess,
-  initializeFailure,
-  loginSuccess,
-  loginFailure,
-  logoutSuccess,
-  logoutFailure,
-  unreadMessages,
-}
-
-/// Used by ZendeskMessaging to attach custom async observers
-class ZendeskMessagingObserver {
-  ZendeskMessagingObserver(this.removeOnCall, this.execution);
-
-  final bool removeOnCall;
-  final Function(Map<String, dynamic>? args) execution;
-}
-
 class ZendeskLoginResponse {
   ZendeskLoginResponse(this.id, this.externalId);
 
@@ -32,29 +13,11 @@ class ZendeskLoginResponse {
 
 class ZendeskMessaging {
   static const MethodChannel _channel = MethodChannel('zendesk_messaging');
-  static const channelMethodToMessageType = {
-    'initialize_success': ZendeskMessagingMessageType.initializeSuccess,
-    'initialize_failure': ZendeskMessagingMessageType.initializeFailure,
-    'login_success': ZendeskMessagingMessageType.loginSuccess,
-    'login_failure': ZendeskMessagingMessageType.loginFailure,
-    'logout_success': ZendeskMessagingMessageType.logoutSuccess,
-    'logout_failure': ZendeskMessagingMessageType.logoutFailure,
-    'unread_messages': ZendeskMessagingMessageType.unreadMessages,
-  };
 
-  /// Global handler, all channel method calls will trigger this observer
-  static Function(ZendeskMessagingMessageType type, Map? arguments)? _handler;
-
-  /// Allow end-user to use local observer when calling some methods
-  static final Map<ZendeskMessagingMessageType, ZendeskMessagingObserver>
-      _observers = {};
-
-  /// Attach a global observer for incoming messages
-  static void setMessageHandler(
-    Function(ZendeskMessagingMessageType type, Map? arguments)? handler,
-  ) {
-    _handler = handler;
-  }
+  static final StreamController<int> _unreadMessagesCountController =
+      StreamController<int>.broadcast();
+  static Stream<int> get unreadMessagesCountStream =>
+      _unreadMessagesCountController.stream;
 
   /// Initialize the Zendesk SDK for Android and iOS
   ///
@@ -76,17 +39,9 @@ class ZendeskMessaging {
       await _channel.invokeMethod('initialize', {
         'channelKey': Platform.isAndroid ? androidChannelKey : iosChannelKey,
       });
-      final Completer<void> completer = Completer();
-      _setObserver(ZendeskMessagingMessageType.initializeSuccess, (_) {
-        completer.complete();
-      });
-      _setObserver(ZendeskMessagingMessageType.initializeFailure, (args) {
-        completer.completeError(PlatformException(
-            code: 'initialize_error', message: args?['error'] as String?));
-      });
-      return completer.future;
     } catch (e) {
       debugPrint('ZendeskMessaging - initialize - Error: $e}');
+      rethrow;
     }
   }
 
@@ -135,110 +90,43 @@ class ZendeskMessaging {
     }
   }
 
-  /// Authenticate the current session with a JWT
-  ///
-  /// @param  jwt       Required by the SDK - You must generate it from your backend
-  /// @param  onSuccess Optional - If you need to be notified about the login success
-  /// @param  onFailure Optional - If you need to be notified about the login failure
-  static Future<void> loginUserCallbacks({
-    required String jwt,
-    Function(String? id, String? externalId)? onSuccess,
-    Function()? onFailure,
-  }) async {
-    if (jwt.isEmpty) {
-      debugPrint('ZendeskMessaging - loginUser - jwt can not be empty');
-      return;
-    }
-
-    try {
-      _setObserver(
-        ZendeskMessagingMessageType.loginSuccess,
-        onSuccess != null
-            ? (Map? args) {
-                final id = args?['id'] ?? '';
-                final externalId = args?['externalId'] ?? '';
-                onSuccess(id, externalId);
-              }
-            : null,
-      );
-      _setObserver(
-        ZendeskMessagingMessageType.loginFailure,
-        onFailure != null ? (Map? args) => onFailure() : null,
-      );
-      await _channel.invokeMethod('loginUser', {'jwt': jwt});
-    } catch (e) {
-      debugPrint('ZendeskMessaging - loginUser - Error: $e}');
-    }
-  }
-
   /// Helper function to login waiting for future to complete
   ///
   /// @return   The zendesk userId
   static Future<ZendeskLoginResponse> loginUser({required String jwt}) async {
-    final completer = Completer<ZendeskLoginResponse>();
-    await loginUserCallbacks(
-      jwt: jwt,
-      onSuccess: (id, externalId) =>
-          completer.complete(ZendeskLoginResponse(id, externalId)),
-      onFailure: () =>
-          completer.completeError(Exception('Zendesk::loginUser failed')),
-    );
-    return completer.future;
-  }
-
-  /// Logout the currently authenticated user
-  ///
-  /// @param  onSuccess Optional - If you need to be notified about the logout success
-  /// @param  onFailure Optional - If you need to be notified about the logout failure
-  static Future<void> logoutUserCallbacks({
-    Function()? onSuccess,
-    Function()? onFailure,
-  }) async {
     try {
-      _setObserver(
-        ZendeskMessagingMessageType.logoutSuccess,
-        onSuccess != null ? (Map? args) => onSuccess() : null,
-      );
-      _setObserver(
-        ZendeskMessagingMessageType.logoutFailure,
-        onFailure != null ? (Map? args) => onFailure() : null,
-      );
-
-      await _channel.invokeMethod('logoutUser');
+      final result = await _channel.invokeMethod('loginUser', {'jwt': jwt});
+      final arguments = result == null
+          ? <String, dynamic>{}
+          : Map<String, dynamic>.from(result);
+      final String id = arguments['id'] ?? '';
+      final String externalId = arguments['externalId'] ?? '';
+      return ZendeskLoginResponse(id, externalId);
     } catch (e) {
-      debugPrint('ZendeskMessaging - logoutUser - Error: $e}');
+      debugPrint('ZendeskMessaging - loginUser - Error: $e}');
+      rethrow;
     }
   }
 
   /// Helper function to logout waiting for future to complete
   static Future<void> logoutUser() async {
-    final completer = Completer<void>();
-    await logoutUserCallbacks(
-      onSuccess: completer.complete,
-      onFailure: () =>
-          completer.completeError(Exception('Zendesk::logoutUser failed')),
-    );
-    return completer.future;
+    try {
+      await _channel.invokeMethod('logoutUser');
+    } catch (e) {
+      debugPrint('ZendeskMessaging - logoutUser - Error: $e}');
+      rethrow;
+    }
   }
 
   /// Listen count of unread messages
   ///
   /// @return  Function onUnreadMessageCountChanged(int) - If you need to be notified about the unread messages count changed
-  static Future<void> listenUnreadMessages({
-    Function(int?)? onUnreadMessageCountChanged,
-  }) async {
+  static Future<void> listenUnreadMessages() async {
     try {
-      _setObserver(
-        ZendeskMessagingMessageType.unreadMessages,
-        onUnreadMessageCountChanged != null
-            ? (Map? args) =>
-                onUnreadMessageCountChanged(args?['messages_count'])
-            : null,
-        removeOnCall: false,
-      );
       await _channel.invokeMethod('listenUnreadMessages');
     } catch (e) {
       debugPrint('ZendeskMessaging - listenUnreadMessages - Error: $e}');
+      rethrow;
     }
   }
 
@@ -285,37 +173,11 @@ class ZendeskMessaging {
         ? Map<String, dynamic>.from(call.arguments)
         : <String, dynamic>{};
 
-    if (!channelMethodToMessageType.containsKey(method)) {
-      return;
-    }
-
-    final type = channelMethodToMessageType[method]!;
-    final globalHandler = _handler;
-    if (globalHandler != null) {
-      globalHandler(type, arguments);
-    }
-
-    // call all observers too
-    final observer = _observers[type];
-    if (observer != null) {
-      observer.execution(arguments);
-
-      if (observer.removeOnCall) {
-        _setObserver(type, null);
-      }
-    }
-  }
-
-  /// Add an observer for a specific type
-  static _setObserver(
-    ZendeskMessagingMessageType type,
-    void Function(Map<String, dynamic>? args)? execution, {
-    bool removeOnCall = true,
-  }) {
-    if (execution == null) {
-      _observers.remove(type);
-    } else {
-      _observers[type] = ZendeskMessagingObserver(removeOnCall, execution);
+    switch (method) {
+      case 'unread_messages':
+        final count = arguments['messages_count'] as int?;
+        _unreadMessagesCountController.add(count ?? 0);
+        break;
     }
   }
 
