@@ -5,10 +5,12 @@ import ZendeskSDK
 public class ZendeskMessaging: NSObject {
     let TAG = "[ZendeskMessaging]"
     
-    private var zendeskPlugin: SwiftZendeskMessagingPlugin? = nil
+    private var zendeskPlugin: SwiftZendeskMessagingPlugin
+    private let channel: FlutterMethodChannel
 
-    init(flutterPlugin: SwiftZendeskMessagingPlugin) {
+    init(flutterPlugin: SwiftZendeskMessagingPlugin, channel: FlutterMethodChannel) {
         self.zendeskPlugin = flutterPlugin
+        self.channel = channel
     }
     
     func initialize(channelKey: String, flutterResult: @escaping FlutterResult) {
@@ -16,7 +18,7 @@ public class ZendeskMessaging: NSObject {
         Zendesk.initialize(withChannelKey: channelKey, messagingFactory: DefaultMessagingFactory()) { result in
             DispatchQueue.main.async {
                 if case let .failure(error) = result {
-                    self.zendeskPlugin?.isInitialized = false
+                    self.zendeskPlugin.isInitialized = false
                     print("\(self.TAG) - initialize failure - \(error.localizedDescription)\n")
                     flutterResult(FlutterError(
                         code: "initialize_error",
@@ -24,7 +26,7 @@ public class ZendeskMessaging: NSObject {
                         details: nil)
                     )
                 } else {
-                    self.zendeskPlugin?.isInitialized = true
+                    self.zendeskPlugin.isInitialized = true
                     print("\(self.TAG) - initialize success")
                     flutterResult(nil)
                 }
@@ -35,7 +37,7 @@ public class ZendeskMessaging: NSObject {
 
     func invalidate() {
         Zendesk.invalidate()
-        self.zendeskPlugin?.isInitialized = false
+        self.zendeskPlugin.isInitialized = false
         print("\(self.TAG) - invalidate")
     }
     
@@ -93,7 +95,7 @@ public class ZendeskMessaging: NSObject {
             DispatchQueue.main.async {
                 switch result {
                 case .success(let user):
-                    self.zendeskPlugin?.isLoggedIn = true
+                    self.zendeskPlugin.isLoggedIn = true
                     flutterResult([
                         "id": user.id,
                         "externalId": user.externalId
@@ -116,7 +118,7 @@ public class ZendeskMessaging: NSObject {
             DispatchQueue.main.async {
                 switch result {
                 case .success:
-                    self.zendeskPlugin?.isLoggedIn = false
+                    self.zendeskPlugin.isLoggedIn = false
                     flutterResult(nil)
                 case .failure(let error):
                     print("\(self.TAG) - logout failure - \(error.localizedDescription)\n")

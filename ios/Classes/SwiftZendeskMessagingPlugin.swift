@@ -27,7 +27,7 @@ public class SwiftZendeskMessagingPlugin: NSObject, FlutterPlugin {
     private func processMethodCall(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         let method = call.method
         let arguments = call.arguments as? Dictionary<String, Any>
-        let zendeskMessaging = ZendeskMessaging(flutterPlugin: self)
+        let zendeskMessaging = ZendeskMessaging(flutterPlugin: self, channel: channel)
         
         switch(method){
         case "initialize":
@@ -114,7 +114,7 @@ public class SwiftZendeskMessagingPlugin: NSObject, FlutterPlugin {
     }
     
     private func handleMessageCount() -> Int {
-        let zendeskMessaging = ZendeskMessaging(flutterPlugin: self)
+        let zendeskMessaging = ZendeskMessaging(flutterPlugin: self, channel: channel)
         return zendeskMessaging.getUnreadMessageCount()
     }
     
