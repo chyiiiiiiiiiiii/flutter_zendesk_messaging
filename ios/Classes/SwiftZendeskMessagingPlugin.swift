@@ -4,11 +4,14 @@ import UIKit
 public class SwiftZendeskMessagingPlugin: NSObject, FlutterPlugin {
     let TAG = "[SwiftZendeskMessagingPlugin]"
     private var channel: FlutterMethodChannel
+    private var zendeskMessaging: ZendeskMessaging?
     var isInitialized = false
     var isLoggedIn = false
     
     init(channel: FlutterMethodChannel) {
         self.channel = channel
+        super.init();
+        self.zendeskMessaging = ZendeskMessaging(flutterPlugin: self, channel: channel)
     }
     
     public static func register(with registrar: FlutterPluginRegistrar) {
@@ -27,19 +30,19 @@ public class SwiftZendeskMessagingPlugin: NSObject, FlutterPlugin {
     private func processMethodCall(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         let method = call.method
         let arguments = call.arguments as? Dictionary<String, Any>
-        let zendeskMessaging = ZendeskMessaging(flutterPlugin: self, channel: channel)
+        
         
         switch(method){
         case "initialize":
             let channelKey: String = (arguments?["channelKey"] ?? "") as! String
-            zendeskMessaging.initialize(channelKey: channelKey, flutterResult: result)
+            zendeskMessaging?.initialize(channelKey: channelKey, flutterResult: result)
         case "show":
             if (!isInitialized) {
                 print("\(TAG) - Messaging needs to be initialized first.\n")
                 reportNotInitializedFlutterError(result: result)
                 return
             }
-            zendeskMessaging.show(rootViewController: UIApplication.shared.delegate?.window??.rootViewController, flutterResult: result)
+            zendeskMessaging?.show(rootViewController: UIApplication.shared.delegate?.window??.rootViewController, flutterResult: result)
         case "loginUser":
             if (!isInitialized) {
                 print("\(TAG) - Messaging needs to be initialized first.\n")
@@ -47,14 +50,14 @@ public class SwiftZendeskMessagingPlugin: NSObject, FlutterPlugin {
                 return
             }
             let jwt: String = arguments?["jwt"] as! String
-            zendeskMessaging.loginUser(jwt: jwt, flutterResult: result)
+            zendeskMessaging?.loginUser(jwt: jwt, flutterResult: result)
         case "logoutUser":
             if (!isInitialized) {
                 print("\(TAG) - Messaging needs to be initialized first.\n")
                 reportNotInitializedFlutterError(result: result)
                 return
             }
-            zendeskMessaging.logoutUser(flutterResult: result)
+            zendeskMessaging?.logoutUser(flutterResult: result)
         case "getUnreadMessageCount":
             if (!isInitialized) {
                 print("\(TAG) - Messaging needs to be initialized first.\n")
@@ -73,7 +76,7 @@ public class SwiftZendeskMessagingPlugin: NSObject, FlutterPlugin {
                 return
             }
             let tags: [String] = arguments?["tags"] as! [String]
-            zendeskMessaging.setConversationTags(tags:tags)
+            zendeskMessaging?.setConversationTags(tags:tags)
             result(nil)
         case "clearConversationTags":
             if (!isInitialized) {
@@ -81,7 +84,7 @@ public class SwiftZendeskMessagingPlugin: NSObject, FlutterPlugin {
                 reportNotInitializedFlutterError(result: result)
                 return
             }
-            zendeskMessaging.clearConversationTags()
+            zendeskMessaging?.clearConversationTags()
             result(nil)
         case "setConversationFields":
             if (!isInitialized) {
@@ -90,7 +93,7 @@ public class SwiftZendeskMessagingPlugin: NSObject, FlutterPlugin {
                 return
             }
             let fields: [String: String] = arguments?["fields"] as! [String: String]
-            zendeskMessaging.setConversationFields(fields:fields)
+            zendeskMessaging?.setConversationFields(fields:fields)
             result(nil)
         case "clearConversationFields":
             if (!isInitialized) {
@@ -98,7 +101,7 @@ public class SwiftZendeskMessagingPlugin: NSObject, FlutterPlugin {
                 reportNotInitializedFlutterError(result: result)
                 return
             }
-            zendeskMessaging.clearConversationFields()
+            zendeskMessaging?.clearConversationFields()
             result(nil)
         case "invalidate":
             if (!isInitialized) {
@@ -106,7 +109,7 @@ public class SwiftZendeskMessagingPlugin: NSObject, FlutterPlugin {
                 reportNotInitializedFlutterError(result: result)
                 return
             }
-            zendeskMessaging.invalidate()
+            zendeskMessaging?.invalidate()
             result(nil)
         default:
             result(FlutterMethodNotImplemented)
@@ -114,8 +117,7 @@ public class SwiftZendeskMessagingPlugin: NSObject, FlutterPlugin {
     }
     
     private func handleMessageCount() -> Int {
-        let zendeskMessaging = ZendeskMessaging(flutterPlugin: self, channel: channel)
-        return zendeskMessaging.getUnreadMessageCount()
+        return zendeskMessaging?.getUnreadMessageCount() ?? 0
     }
     
     private func handleInitializedStatus() -> Bool {
