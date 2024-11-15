@@ -137,8 +137,28 @@ ZendeskMessaging.setMessageHandler((type, args){
 
 ## Known shortcomings
 - **Attachment file**：`Currently does not support.` The official said it will be launched in the future.
+
 - **Chat room closed**：An agent can not reply to a customer at any time.
 if the customer is not active in the foreground, the room will be closed automatically. It is inconvenient to track chat history.
+
+-  **Android Permission**:
+if you meet the problem like below:
+```
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':app:processXXXDebugMainManifest'.
+> Manifest merger failed : Attribute uses-permission#android.permission.WRITE_EXTERNAL_STORAGE@maxSdkVersion value=(28) from [:camera_android_camerax] AndroidManifest.xml:14:9-35
+        is also present at [zendesk.messaging:messaging-android:2.26.0] AndroidManifest.xml:29:9-35 value=(22).
+        Suggestion: add 'tools:replace="android:maxSdkVersion"' to <uses-permission> element at AndroidManifest.xml to override.
+```
+Please add following code in `AndroidManifest.xml`
+```xml
+<uses-permission
+    android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+    android:maxSdkVersion="28"
+    tools:replace="android:maxSdkVersion"  />
+``` 
 
 
 ## Future Function
