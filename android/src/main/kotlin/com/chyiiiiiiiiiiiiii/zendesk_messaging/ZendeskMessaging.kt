@@ -15,12 +15,6 @@ class ZendeskMessaging(
         const val TAG = "[ZendeskMessaging]"
 
         // Method channel callback keys
-        const val INITIALIZE_SUCCESS: String = "initialize_success"
-        const val INITIALIZE_FAILURE: String = "initialize_failure"
-        const val LOGIN_SUCCESS: String = "login_success"
-        const val LOGIN_FAILURE: String = "login_failure"
-        const val LOGOUT_SUCCESS: String = "logout_success"
-        const val LOGOUT_FAILURE: String = "logout_failure"
         const val UNREAD_MESSAGES: String = "unread_messages"
     }
 
@@ -42,7 +36,7 @@ class ZendeskMessaging(
         }
     }
 
-    fun initialize(channelKey: String) {
+    fun initialize(channelKey: String, result: MethodChannel.Result) {
         println("$TAG - Channel Key - $channelKey")
         Zendesk.initialize(
             plugin.activity!!,
@@ -50,12 +44,12 @@ class ZendeskMessaging(
             successCallback = { value ->
                 plugin.isInitialized = true
                 println("$TAG - initialize success - $value")
-                channel.invokeMethod(INITIALIZE_SUCCESS, null)
+                result.success(null)
             },
             failureCallback = { error ->
                 plugin.isInitialized = false
                 println("$TAG - initialize failure - $error")
-                channel.invokeMethod(INITIALIZE_FAILURE, mapOf("error" to error.message))
+                result.error("initialize_error", error.message, null)
             },
             messagingFactory = DefaultMessagingFactory()
         )
@@ -88,30 +82,27 @@ class ZendeskMessaging(
         Zendesk.instance.messaging.clearConversationTags()
     }
 
-    fun loginUser(jwt: String) {
+    fun loginUser(jwt: String, result: MethodChannel.Result) {
         Zendesk.instance.loginUser(
             jwt,
             { user ->
                 plugin.isLoggedIn = true
-                channel.invokeMethod(
-                    LOGIN_SUCCESS,
-                    mapOf("id" to user.id, "externalId" to user.externalId)
-                )
+                result.success(mapOf("id" to user.id, "externalId" to user.externalId))
             },
             { error ->
                 println("$TAG - Login failure : ${error.message}")
                 println(error)
-                channel.invokeMethod(LOGIN_FAILURE, mapOf("error" to error.message))
+                result.error("login_error", error.message, null)
             })
     }
 
-    fun logoutUser() {
+    fun logoutUser(result: MethodChannel.Result) {
         Zendesk.instance.logoutUser(successCallback = {
             plugin.isLoggedIn = false
-            channel.invokeMethod(LOGOUT_SUCCESS, null)
+            result.success(null)
         }, failureCallback = { error ->
             println("$TAG - Logout failure : ${error.message}")
-            channel.invokeMethod(LOGOUT_FAILURE, mapOf("error" to error.message))
+            result.error("logout_error", error.message, null)
         })
         Zendesk.instance.removeEventListener(zendeskEventListener)
     }

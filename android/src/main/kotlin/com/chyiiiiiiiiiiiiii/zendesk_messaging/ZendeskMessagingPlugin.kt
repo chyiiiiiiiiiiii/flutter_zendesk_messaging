@@ -32,14 +32,8 @@ class ZendeskMessagingPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
         when (call.method) {
             "initialize" -> {
-                if (isInitialized) {
-                    println("$tag - Zendesk SDK is already initialized!")
-                    reportAlreadyInitializedFlutterError(result)
-                    return
-                }
                 val channelKey = call.argument<String>("channelKey")!!
-                zendeskMessaging.initialize(channelKey)
-                result.success(null)
+                zendeskMessaging.initialize(channelKey, result)
             }
 
             "show" -> {
@@ -67,18 +61,12 @@ class ZendeskMessagingPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                     return
                 }
 
-                try {
-                    val jwt = call.argument<String>("jwt")
-                    if (jwt.isNullOrEmpty()) {
-                        throw Exception("JWT is empty or null")
-                    }
-                    zendeskMessaging.loginUser(jwt)
-                    result.success(null)
-                } catch (err: Throwable) {
-                    println("$tag - ZendeskMessaging::login invalid arguments. {'jwt': '<your_jwt>'} expected !")
-                    println(err.message)
-                    result.error("login_error", err.message, null)
+                val jwt = call.argument<String>("jwt")
+                if (jwt.isNullOrEmpty()) {
+                    result.error("login_error", "JWT is empty or null", null)
+                    return
                 }
+                zendeskMessaging.loginUser(jwt, result)
             }
 
             "logoutUser" -> {
@@ -87,8 +75,7 @@ class ZendeskMessagingPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                     reportNotInitializedFlutterError(result)
                     return
                 }
-                zendeskMessaging.logoutUser()
-                result.success(null)
+                zendeskMessaging.logoutUser(result)
             }
 
             "getUnreadMessageCount" -> {
@@ -191,14 +178,6 @@ class ZendeskMessagingPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                 result.notImplemented()
             }
         }
-    }
-
-    private fun reportAlreadyInitializedFlutterError(result: MethodChannel.Result) {
-        result.error(
-            "already_initialized",
-            "Zendesk SDK is already initialized",
-            null
-        )
     }
 
     private fun reportNotInitializedFlutterError(result: MethodChannel.Result) {

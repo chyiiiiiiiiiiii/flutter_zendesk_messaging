@@ -24,12 +24,6 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    // Optional, observe all incoming messages
-    ZendeskMessaging.setMessageHandler((type, arguments) {
-      setState(() {
-        channelMessages.add("$type - args=$arguments");
-      });
-    });
   }
 
   @override
@@ -70,7 +64,8 @@ class _MyAppState extends State<MyApp> {
                   ),
                   ElevatedButton(
                     onPressed: () => _getUnreadMessageCount(),
-                    child: Text('Get unread message count - $unreadMessageCount'),
+                    child:
+                        Text('Get unread message count - $unreadMessageCount'),
                   ),
                 ],
                 ElevatedButton(
@@ -113,23 +108,23 @@ class _MyAppState extends State<MyApp> {
     );
   }
 
-  void _login() {
+  Future<void> _login() async {
     // You can attach local observer when calling some methods to be notified when ready
-    ZendeskMessaging.loginUserCallbacks(
-      jwt: "my_jwt",
-      onSuccess: (id, externalId) => setState(() {
-        channelMessages.add("Login observer - SUCCESS: $id, $externalId");
-        isLogin = true;
-      }),
-      onFailure: () => setState(() {
-        channelMessages.add("Login observer - FAILURE!");
-        isLogin = false;
-      }),
-    );
+    try {
+      final response = await ZendeskMessaging.loginUser(jwt: 'my_jwt');
+      channelMessages.add(
+          "Login observer - SUCCESS: ${response.id}, ${response.externalId}");
+      isLogin = true;
+    } catch (e) {
+      channelMessages.add("Login observer - FAILURE!");
+      isLogin = false;
+    }
   }
 
-  void _logout() {
-    ZendeskMessaging.logoutUser();
+  Future<void> _logout() async {
+    try {
+      await ZendeskMessaging.logoutUser();
+    } catch (_) {}
     setState(() {
       isLogin = false;
     });
