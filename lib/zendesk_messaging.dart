@@ -84,7 +84,7 @@ class ZendeskMessaging {
         completer.completeError(PlatformException(
             code: 'initialize_error', message: args?['error'] as String?));
       });
-      return completer.future.timeout(const Duration(seconds: 3));
+      return completer.future;
     } catch (e) {
       debugPrint('ZendeskMessaging - initialize - Error: $e}');
     }
