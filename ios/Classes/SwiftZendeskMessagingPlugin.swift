@@ -65,6 +65,14 @@ public class SwiftZendeskMessagingPlugin: NSObject, FlutterPlugin {
                 return
             }
             result(handleMessageCount())
+        case "listenUnreadMessages":
+            if (!isInitialized) {
+                print("\(TAG) - Messaging needs to be initialized first.\n")
+                reportNotInitializedFlutterError(result: result)
+                return
+            }
+            zendeskMessaging?.listenMessageCountChanged()
+            result(nil)
         case "isInitialized":
             result(handleInitializedStatus())
         case "isLoggedIn":

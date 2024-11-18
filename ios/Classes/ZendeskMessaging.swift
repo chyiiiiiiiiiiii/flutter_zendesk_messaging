@@ -3,6 +3,8 @@ import ZendeskSDKMessaging
 import ZendeskSDK
 
 public class ZendeskMessaging: NSObject {
+    private static let unreadMessages: String = "unread_messages"
+    
     let TAG = "[ZendeskMessaging]"
     
     private weak var zendeskPlugin: SwiftZendeskMessagingPlugin?
@@ -135,6 +137,20 @@ public class ZendeskMessaging: NSObject {
     func getUnreadMessageCount() -> Int {
         let count = Zendesk.instance?.messaging?.getUnreadMessageCount()
         return count ?? 0
+    }
+    
+    func listenMessageCountChanged() {
+        Zendesk.instance?.addEventObserver(self, { event in
+            switch event {
+            case let .unreadMessageCountChanged(currentUnreadCount):
+                self.channel.invokeMethod(
+                    Self.unreadMessages,
+                    arguments: ["messages_count": currentUnreadCount]
+                )
+            default:
+                break
+            }
+        })
     }
 
     func setConversationFields(fields: [String: String]) {
