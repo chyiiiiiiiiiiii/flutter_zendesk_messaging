@@ -71,8 +71,13 @@ ZendeskMessaging.show();
 The SDK needs to be initialized before using authentication methods !
 
 ```dart
+// Method 1
 final ZendeskLoginResponse result = await ZendeskMessaging.loginUser(jwt: "YOUR_JWT");
 await ZendeskMessaging.logoutUser();
+
+// Method 2 if you need callbacks
+await ZendeskMessaging.loginUserCallbacks(jwt: "YOUR_JWT", onSuccess: (id, externalId) => ..., onFailure: () => ...);
+await ZendeskMessaging.logoutUserCallbacks(onSuccess: () => ..., onFailure: () => ...);
 ```
 ### Check authentication state (optional)
 
@@ -118,6 +123,16 @@ Allows custom conversation tags to be set, adding contextual data about the conv
  await ZendeskMessaging.clearConversationTags();
 
 // Note: This method does not affect conversation tags already applied to the conversation.
+```
+
+### Global observer (optional)
+
+If you need to catch all events you can attach a global observer to the ZendeskMessaging.
+
+```dart
+ZendeskMessaging.setMessageHandler((type, args){
+    print("$type => $args");
+});
 ```
 
 ## Known shortcomings
