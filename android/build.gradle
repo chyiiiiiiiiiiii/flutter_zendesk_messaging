@@ -2,7 +2,7 @@ group 'com.chyiiiiiiiiiiiiii.zendesk_messaging'
 version '1.0-SNAPSHOT'
 
 buildscript {
-    ext.kotlin_version = '1.9.24'
+    ext.kotlin_version = '2.1.0'
     repositories {
         google()
         mavenCentral()
@@ -52,5 +52,5 @@ android {
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    implementation "zendesk.messaging:messaging-android:2.26.0"
+    implementation "zendesk.messaging:messaging-android:2.33.0"
 }
