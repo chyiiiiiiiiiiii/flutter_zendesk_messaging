@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'dart:io';
-
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:flutter/services.dart';
 
+/// Response for login
 class ZendeskLoginResponse {
   ZendeskLoginResponse(this.id, this.externalId);
 
@@ -11,209 +11,267 @@ class ZendeskLoginResponse {
   final String? externalId;
 }
 
+/// Chat view modes
+enum ZendeskViewMode { fullscreen, sheet, pageSheet, formSheet, automatic }
+
+/// Messaging UI events
+enum ZendeskUIEventType { opened, closed, willClose, minimized, reopened }
+
+class ZendeskUIEvent {
+  final ZendeskUIEventType type;
+  final String? dismissType;
+  final DateTime timestamp;
+
+  ZendeskUIEvent(this.type, {this.dismissType, DateTime? timestamp})
+      : timestamp = timestamp ?? DateTime.now();
+}
+
+/// Conversation event payload
+class ZendeskConversationEvent {
+  final String event; // e.g., conversation_started, conversation_opened
+  final String? conversationId;
+  final String? ticketId;
+  final Map<String, dynamic>? payload;
+
+  ZendeskConversationEvent(this.event,
+      {this.conversationId, this.ticketId, this.payload});
+}
+
+/// Ticket status update
+class ZendeskTicketStatus {
+  final String ticketId;
+  final String? conversationId;
+  final String status;
+  final DateTime timestamp;
+
+  ZendeskTicketStatus(
+      {required this.ticketId,
+        this.conversationId,
+        required this.status,
+        required this.timestamp});
+
+  factory ZendeskTicketStatus.fromMap(Map<String, dynamic> map) {
+    return ZendeskTicketStatus(
+      ticketId: map['ticketId'] ?? '',
+      conversationId: map['conversationId'],
+      status: map['status'] ?? 'unknown',
+      timestamp: DateTime.fromMillisecondsSinceEpoch(
+          ((map['timestamp'] ?? DateTime.now().millisecondsSinceEpoch) * 1000)
+              .toInt()),
+    );
+  }
+}
+
+/// Zendesk authentication failure
+class ZendeskAuthFailure {
+  final String error;
+
+  ZendeskAuthFailure(this.error);
+}
+
+/// Public API for Zendesk Messaging
 class ZendeskMessaging {
   static const MethodChannel _channel = MethodChannel('zendesk_messaging');
+  static bool _handlerInitialized = false;
 
-  static final StreamController<int> _unreadMessagesCountController =
-      StreamController<int>.broadcast();
+  // Streams
+  static final _unreadMessagesController = StreamController<int>.broadcast();
+  static final _conversationEventsController =
+  StreamController<ZendeskConversationEvent>.broadcast();
+  static final _messagingUIController = StreamController<ZendeskUIEvent>.broadcast();
+  static final _authFailureController =
+  StreamController<ZendeskAuthFailure>.broadcast();
+  static final _ticketStatusController =
+  StreamController<ZendeskTicketStatus>.broadcast();
+
+  // Stream getters
   static Stream<int> get unreadMessagesCountStream =>
-      _unreadMessagesCountController.stream;
+      _unreadMessagesController.stream;
 
-  /// Initialize the Zendesk SDK for Android and iOS
-  ///
-  /// @param  androidChannelKey  The Android SDK key generated from Zendesk dashboard
-  /// @param  iosChannelKey      The iOS SDK key generated from the Zendesk dashboard
-  static Future<void> initialize({
-    required String androidChannelKey,
-    required String iosChannelKey,
-  }) async {
-    if (androidChannelKey.isEmpty || iosChannelKey.isEmpty) {
-      debugPrint('ZendeskMessaging - initialize - keys can not be empty');
-      return;
-    }
+  static Stream<ZendeskConversationEvent> get conversationEventsStream =>
+      _conversationEventsController.stream;
 
-    try {
-      _channel.setMethodCallHandler(
-        _onMethodCall,
-      ); // start observing channel messages
-      await _channel.invokeMethod('initialize', {
-        'channelKey': Platform.isAndroid ? androidChannelKey : iosChannelKey,
-      });
-    } catch (e) {
-      debugPrint('ZendeskMessaging - initialize - Error: $e}');
-      rethrow;
-    }
+  static Stream<ZendeskUIEvent> get messagingUIStream =>
+      _messagingUIController.stream;
+
+  static Stream<ZendeskAuthFailure> get authFailureStream =>
+      _authFailureController.stream;
+
+  static Stream<ZendeskTicketStatus> get ticketStatusStream =>
+      _ticketStatusController.stream;
+
+  /// Initialize method call handler (called once)
+  static void _initializeMethodHandler() {
+    if (_handlerInitialized) return;
+
+    debugPrint('[ZendeskMessaging] Setting up method call handler');
+    _channel.setMethodCallHandler(_onMethodCall);
+    _handlerInitialized = true;
+    debugPrint('[ZendeskMessaging] Method call handler initialized');
   }
 
-  /// Invalidates the current instance of ZendeskMessaging.
-  /// After calling this method you will have to call ZendeskMessaging.initialize again if you would like to use ZendeskMessaging.
-  static Future<void> invalidate() async {
-    try {
-      await _channel.invokeMethod('invalidate');
-    } catch (e) {
-      debugPrint('ZendeskMessaging - invalidate - Error: $e}');
-    }
+  /// Initialize Zendesk Messaging SDK
+  static Future<void> initialize(
+      {required String androidChannelKey, required String iosChannelKey}) async {
+    _initializeMethodHandler();
+
+    debugPrint('[ZendeskMessaging] Calling native initialize');
+    await _channel.invokeMethod('initialize', {
+      'channelKey': Platform.isAndroid ? androidChannelKey : iosChannelKey,
+    });
+    debugPrint('[ZendeskMessaging] Native initialize completed');
   }
 
-  /// Start the Zendesk Messaging UI
-  static Future<void> show() async {
-    try {
+  /// Start a new conversation (ticket)
+  static Future<ZendeskTicketStatus?> startNewConversation(
+      {ZendeskViewMode viewMode = ZendeskViewMode.fullscreen}) async {
+    final result = await _channel.invokeMethod('startNewConversation', {
+      if (Platform.isIOS) 'viewMode': viewMode.name,
+    });
+
+    if (result is Map) {
+      final safeMap = Map<String, dynamic>.from(result);
+      return ZendeskTicketStatus.fromMap(safeMap);
+    }
+    return null;
+  }
+
+  /// Show the chat UI
+  static Future<void> show(
+      {ZendeskViewMode viewMode = ZendeskViewMode.fullscreen,
+        bool useNavigation = false}) async {
+    if (Platform.isAndroid) {
       await _channel.invokeMethod('show');
-    } catch (e) {
-      debugPrint('ZendeskMessaging - show - Error: $e}');
+    } else {
+      await _channel.invokeMethod(
+          useNavigation ? 'showInNavigation' : 'show', {'viewMode': viewMode.name});
     }
   }
 
-  /// Add a list of tags to a support ticket
-  ///
-  /// Conversation tags are not immediately associated with a conversation when this method is called.
-  /// It will only be applied to a conversation when end users either start a new
-  /// conversation or send a new message in an existing conversation.
-  ///
-  /// For example, to apply "promo_code" and "discount" tags to a conversation about an order, then you would call:
-  /// `ZendeskMessaging.setConversationTags(["promo_code","discount"])`
-  static Future<void> setConversationTags(List<String> tags) async {
-    try {
-      await _channel.invokeMethod('setConversationTags', {'tags': tags});
-    } catch (e) {
-      debugPrint('ZendeskMessaging - setConversationTags - Error: $e}');
-    }
-  }
-
-  /// Remove all the tags on the current support ticket
-  ///
-  static Future<void> clearConversationTags() async {
-    try {
-      await _channel.invokeMethod('clearConversationTags');
-    } catch (e) {
-      debugPrint('ZendeskMessaging - clearConversationTags - Error: $e}');
-    }
-  }
-
-  /// Helper function to login waiting for future to complete
-  ///
-  /// @return   The zendesk userId
+  /// Login a user with JWT
   static Future<ZendeskLoginResponse> loginUser({required String jwt}) async {
-    try {
-      final result = await _channel.invokeMethod('loginUser', {'jwt': jwt});
-      final arguments = result == null
-          ? <String, dynamic>{}
-          : Map<String, dynamic>.from(result);
-      final String id = arguments['id'] ?? '';
-      final String externalId = arguments['externalId'] ?? '';
-      return ZendeskLoginResponse(id, externalId);
-    } catch (e) {
-      debugPrint('ZendeskMessaging - loginUser - Error: $e}');
-      rethrow;
+    final result = await _channel.invokeMethod('loginUser', {'jwt': jwt});
+    if (result is Map) {
+      final safeMap = Map<String, dynamic>.from(result);
+      return ZendeskLoginResponse(safeMap['id'], safeMap['externalId']);
     }
+    return ZendeskLoginResponse(null, null);
   }
 
-  /// Helper function to logout waiting for future to complete
-  static Future<void> logoutUser() async {
-    try {
-      await _channel.invokeMethod('logoutUser');
-    } catch (e) {
-      debugPrint('ZendeskMessaging - logoutUser - Error: $e}');
-      rethrow;
-    }
+  /// Logout user
+  static Future<void> logoutUser() => _channel.invokeMethod('logoutUser');
+
+  /// Conversation fields/tags
+  static Future<void> setConversationTags(List<String> tags) =>
+      _channel.invokeMethod('setConversationTags', {'tags': tags});
+
+  static Future<void> clearConversationTags() =>
+      _channel.invokeMethod('clearConversationTags');
+
+  static Future<void> setConversationFields(Map<String, String> fields) =>
+      _channel.invokeMethod('setConversationFields', {'fields': fields});
+
+  static Future<void> clearConversationFields() =>
+      _channel.invokeMethod('clearConversationFields');
+
+  /// Unread messages count
+  static Future<int> getUnreadMessageCount() async =>
+      await _channel.invokeMethod('getUnreadMessageCount') ?? 0;
+
+  /// Push notification token
+  static Future<void> updatePushNotificationToken(String token) async {
+    await _channel.invokeMethod('updatePushNotificationToken', {'token': token});
   }
 
-  /// Listen count of unread messages
-  ///
-  /// @return  Function onUnreadMessageCountChanged(int) - If you need to be notified about the unread messages count changed
-  static Future<void> listenUnreadMessages() async {
-    try {
-      await _channel.invokeMethod('listenUnreadMessages');
-    } catch (e) {
-      debugPrint('ZendeskMessaging - listenUnreadMessages - Error: $e}');
-      rethrow;
-    }
-  }
+  /// Plugin state
+  static Future<bool> isInitialized() async =>
+      await _channel.invokeMethod('isInitialized') ?? false;
 
-  /// Retrieve unread messages count from the Zendesk SDK
-  static Future<int> getUnreadMessageCount() async {
-    try {
-      return await _channel.invokeMethod(
-        'getUnreadMessageCount',
-      );
-    } catch (e) {
-      debugPrint('ZendeskMessaging - count - Error: $e}');
-      return 0;
-    }
-  }
+  static Future<bool> isLoggedIn() async =>
+      await _channel.invokeMethod('isLoggedIn') ?? false;
 
-  ///  Check if the Zendesk SDK for Android and iOS is already initialized
-  static Future<bool> isInitialized() async {
-    try {
-      return await _channel.invokeMethod(
-        'isInitialized',
-      );
-    } catch (e) {
-      debugPrint('ZendeskMessaging - isInitialized - Error: $e}');
-      return false;
-    }
-  }
+  static Future<void> invalidate() async => _channel.invokeMethod('invalidate');
 
-  ///  Check if the user is already logged in
-  static Future<bool> isLoggedIn() async {
-    try {
-      return await _channel.invokeMethod(
-        'isLoggedIn',
-      );
-    } catch (e) {
-      debugPrint('ZendeskMessaging - isLoggedIn - Error: $e}');
-      return false;
-    }
-  }
+  /// Method call handler from native
+  static Future<void> _onMethodCall(MethodCall call) async {
+    debugPrint('[ZendeskMessaging._onMethodCall] Received: ${call.method}');
 
-  /// Handle incoming message from platforms (iOS and Android)
-  static Future<dynamic> _onMethodCall(final MethodCall call) async {
-    final method = call.method;
-    final arguments = call.arguments != null
-        ? Map<String, dynamic>.from(call.arguments)
+    // Ensure type-safe map
+    final args = call.arguments is Map
+        ? Map<String, dynamic>.from(call.arguments as Map)
         : <String, dynamic>{};
 
-    switch (method) {
+    switch (call.method) {
       case 'unread_messages':
-        final count = arguments['messages_count'] as int?;
-        _unreadMessagesCountController.add(count ?? 0);
+        if (!_unreadMessagesController.isClosed) {
+          _unreadMessagesController.add(args['messages_count'] ?? 0);
+        }
         break;
+
+      case 'conversation_event':
+        if (!_conversationEventsController.isClosed) {
+          _conversationEventsController.add(ZendeskConversationEvent(
+            args['event'] ?? 'unknown',
+            conversationId: args['conversationId'],
+            ticketId: args['ticketId'],
+            payload: Map<String, dynamic>.from(args),
+          ));
+        }
+        break;
+
+      case 'authentication_failed':
+        if (!_authFailureController.isClosed) {
+          _authFailureController.add(ZendeskAuthFailure(args['error'] ?? 'Unknown'));
+        }
+        break;
+
+      case 'messaging_ui_event':
+        if (!_messagingUIController.isClosed) {
+          final eventStr = args['event'] as String?;
+          final dismissType = args['dismissType'] as String?;
+          ZendeskUIEventType? type;
+
+          switch (eventStr) {
+            case 'messaging_opened':
+              type = ZendeskUIEventType.opened;
+              break;
+            case 'messaging_closed':
+              type = ZendeskUIEventType.closed;
+              break;
+            case 'messaging_will_close':
+              type = ZendeskUIEventType.willClose;
+              break;
+            case 'messaging_minimized':
+              type = ZendeskUIEventType.minimized;
+              break;
+            case 'messaging_reopened':
+              type = ZendeskUIEventType.reopened;
+              break;
+          }
+
+          if (type != null) {
+            _messagingUIController.add(ZendeskUIEvent(type, dismissType: dismissType));
+          }
+        }
+        break;
+
+      case 'ticket_status':
+        if (!_ticketStatusController.isClosed && args.isNotEmpty) {
+          _ticketStatusController.add(ZendeskTicketStatus.fromMap(args));
+        }
+        break;
+
+      default:
+        debugPrint('[ZendeskMessaging] Unknown method: ${call.method}');
     }
   }
 
-  /// Set values for conversation fields in the SDK to add contextual data about the conversation.
-  ///
-  /// This method allows setting custom field values which are used to add additional context to a conversation in Zendesk.
-  /// Conversation fields must be created as custom ticket fields in the Zendesk Admin Center and configured to be settable by end users.
-  ///
-  /// Note: Conversation fields are not immediately associated with a conversation when this method is called.
-  /// The fields will only be applied to a conversation when end users start a new conversation or send a new message in an existing conversation.
-  ///
-  /// System ticket fields, such as the Priority field, are not supported.
-  ///
-  /// The values set by this method are persisted in the SDK and will apply to all conversations going forward.
-  /// To remove fields, use the `ClearConversationFields` API.
-  ///
-  /// Example:
-  /// To set custom fields "user_type" and "purchase_amount" for a conversation, use the following call:
-  /// ```
-  /// setConversationFields({"user_type": "new_user", "purchase_amount": "39.99"});
-  /// ```
-  static Future<void> setConversationFields(Map<String, String> fields) async {
-    try {
-      await _channel.invokeMethod('setConversationFields', {'fields': fields});
-    } catch (e) {
-      debugPrint('ZendeskMessaging - setConversationFields - Error: $e}');
-    }
-  }
-
-  /// Remove all the fields on the current support ticket
-  ///
-  static Future<void> clearConversationFields() async {
-    try {
-      await _channel.invokeMethod('clearConversationFields');
-    } catch (e) {
-      debugPrint('ZendeskMessaging - clearConversationFields - Error: $e}');
-    }
+  /// Dispose all streams
+  static void dispose() {
+    if (!_unreadMessagesController.isClosed) _unreadMessagesController.close();
+    if (!_conversationEventsController.isClosed) _conversationEventsController.close();
+    if (!_authFailureController.isClosed) _authFailureController.close();
+    if (!_messagingUIController.isClosed) _messagingUIController.close();
+    if (!_ticketStatusController.isClosed) _ticketStatusController.close();
   }
 }

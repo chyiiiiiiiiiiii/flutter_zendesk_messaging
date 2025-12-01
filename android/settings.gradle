@@ -1,1 +1,9 @@
 rootProject.name = 'zendesk_messaging'
+
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        google()
+        mavenCentral()
+    }
+}

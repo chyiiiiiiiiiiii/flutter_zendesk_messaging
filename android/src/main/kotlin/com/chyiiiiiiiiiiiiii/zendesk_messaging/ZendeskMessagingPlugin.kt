@@ -7,21 +7,16 @@ import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
+import io.flutter.plugin.common.MethodChannel.Result
 
-/** ZendeskMessagingPlugin */
 class ZendeskMessagingPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
-    /// The MethodChannel that will the communication between Flutter and native Android
-    ///
-    /// This local reference serves to register the plugin with the Flutter Engine and unregister it
-    /// when the Flutter Engine is detached from the Activity
-    private val tag = "[ZendeskMessagingPlugin]"
 
     private lateinit var channel: MethodChannel
     private lateinit var zendeskMessaging: ZendeskMessaging
 
     var activity: Activity? = null
-    var isInitialized: Boolean = false
-    var isLoggedIn: Boolean = false
+    var isInitialized = false
+    var isLoggedIn = false
 
     override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         channel = MethodChannel(flutterPluginBinding.binaryMessenger, "zendesk_messaging")
@@ -29,163 +24,88 @@ class ZendeskMessagingPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
         zendeskMessaging = ZendeskMessaging(this, channel)
     }
 
-    override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
+    override fun onMethodCall(call: MethodCall, result: Result) {
         when (call.method) {
             "initialize" -> {
-                val channelKey = call.argument<String>("channelKey")!!
-                zendeskMessaging.initialize(channelKey, result)
-            }
-
-            "show" -> {
-                if (!isInitialized) {
-                    println("$tag - Zendesk SDK needs to be initialized first")
-                    reportNotInitializedFlutterError(result)
-                    return
+                val channelKey = call.argument<String>("channelKey")
+                if (channelKey != null) {
+                    zendeskMessaging.initialize(channelKey, result)
+                } else {
+                    result.error("invalid_args", "channelKey is required", null)
                 }
-                zendeskMessaging.show()
-                result.success(null)
             }
 
-            "isInitialized" -> {
-                result.success(isInitialized)
-            }
-
-            "isLoggedIn" -> {
-                result.success(isLoggedIn)
-            }
+            "show" -> zendeskMessaging.show(result)
 
             "loginUser" -> {
-                if (!isInitialized) {
-                    println("$tag - Zendesk SDK needs to be initialized first")
-                    reportNotInitializedFlutterError(result)
-                    return
-                }
-
                 val jwt = call.argument<String>("jwt")
-                if (jwt.isNullOrEmpty()) {
-                    result.error("login_error", "JWT is empty or null", null)
-                    return
-                }
-                zendeskMessaging.loginUser(jwt, result)
-            }
-
-            "logoutUser" -> {
-                if (!isInitialized) {
-                    println("$tag - Zendesk SDK needs to be initialized first")
-                    reportNotInitializedFlutterError(result)
-                    return
-                }
-                zendeskMessaging.logoutUser(result)
-            }
-
-            "getUnreadMessageCount" -> {
-                if (!isInitialized) {
-                    println("$tag - Zendesk SDK needs to be initialized first")
-                    reportNotInitializedFlutterError(result)
-                    return
-                }
-                result.success(zendeskMessaging.getUnreadMessageCount())
-            }
-
-            "listenUnreadMessages" -> {
-                if (!isInitialized) {
-                    println("$tag - Zendesk SDK needs to be initialized first")
-                    reportNotInitializedFlutterError(result)
-                    return
-                }
-
-                try {
-                    zendeskMessaging.listenMessageCountChanged()
-                    result.success(null)
-                } catch (err: Throwable) {
-                    println("$tag - ZendeskMessaging::listen unread Messages error")
-                    println(err.message)
-                    result.error("listen_unread_messages_error", err.message, null)
+                if (jwt != null) {
+                    zendeskMessaging.loginUser(jwt, result)
+                } else {
+                    result.error("invalid_args", "jwt is required", null)
                 }
             }
+
+            "logoutUser" -> zendeskMessaging.logoutUser(result)
 
             "setConversationTags" -> {
-                if (!isInitialized) {
-                    println("$tag - Zendesk SDK needs to be initialized first")
-                    reportNotInitializedFlutterError(result)
-                    return
-                }
-
-                try {
-                    val tags = call.argument<List<String>>("tags")
-                        ?: throw Exception("tags is empty or null")
-
+                val tags = call.argument<List<String>>("tags")
+                if (tags != null) {
                     zendeskMessaging.setConversationTags(tags)
                     result.success(null)
-                } catch (err: Throwable) {
-                    println("$tag - ZendeskMessaging::setConversationTags invalid arguments. {'tags': '<your_tags>'} expected !")
-                    println(err.message)
-                    result.error("set_conversation_tags_error", err.message, null)
+                } else {
+                    result.error("invalid_args", "tags is required", null)
                 }
             }
 
             "clearConversationTags" -> {
-                if (!isInitialized) {
-                    println("$tag - Zendesk SDK needs to be initialized first")
-                    reportNotInitializedFlutterError(result)
-                    return
-                }
                 zendeskMessaging.clearConversationTags()
                 result.success(null)
             }
 
             "setConversationFields" -> {
-                if (!isInitialized) {
-                    println("$tag - Zendesk SDK needs to be initialized first")
-                    reportNotInitializedFlutterError(result)
-                    return
-                }
-
-                try {
-                    val fields = call.argument<Map<String, String>>("fields")
-                        ?: throw Exception("fields is empty or null")
-
+                val fields = call.argument<Map<String, String>>("fields")
+                if (fields != null) {
                     zendeskMessaging.setConversationFields(fields)
                     result.success(null)
-                } catch (err: Throwable) {
-                    println("$tag - ZendeskMessaging::setConversationFields invalid arguments. {'fields': Map<String, String>}. expected !")
-                    println(err.message)
-                    result.error("set_conversation_fields_error", err.message, null)
+                } else {
+                    result.error("invalid_args", "fields is required", null)
                 }
             }
 
             "clearConversationFields" -> {
-                if (!isInitialized) {
-                    println("$tag - Zendesk SDK needs to be initialized first")
-                    reportNotInitializedFlutterError(result)
-                    return
-                }
                 zendeskMessaging.clearConversationFields()
                 result.success(null)
             }
 
+            "getUnreadMessageCount" -> {
+                val count = zendeskMessaging.getUnreadMessageCount()
+                result.success(count)
+            }
+
+            "isInitialized" -> result.success(isInitialized)
+
+            "isLoggedIn" -> result.success(isLoggedIn)
+
             "invalidate" -> {
-                if (!isInitialized) {
-                    println("$tag - Zendesk SDK is already on an invalid state")
-                    reportNotInitializedFlutterError(result)
-                    return
-                }
                 zendeskMessaging.invalidate()
                 result.success(null)
             }
 
-            else -> {
-                result.notImplemented()
-            }
-        }
-    }
+            "startNewConversation" -> zendeskMessaging.startNewConversation(result)
 
-    private fun reportNotInitializedFlutterError(result: MethodChannel.Result) {
-        result.error(
-            "not_initialized",
-            "Zendesk SDK needs to be initialized first",
-            null
-        )
+            "updatePushNotificationToken" -> {
+                val token = call.argument<String>("token")
+                if (token != null) {
+                    zendeskMessaging.updatePushNotificationToken(token)
+                    result.success(null)
+                } else {
+                    result.error("invalid_args", "token is required", null)
+                }
+            }
+
+            else -> result.notImplemented()
+        }
     }
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {

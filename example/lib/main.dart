@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:zendesk_messaging/zendesk_messaging.dart';
 
@@ -27,13 +26,23 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
+    _subscribeUnreadMessages();
   }
 
   @override
   void dispose() {
-    ZendeskMessaging.invalidate();
     unreadMessagesCountSubscription?.cancel();
+    ZendeskMessaging.invalidate();
     super.dispose();
+  }
+
+  void _subscribeUnreadMessages() {
+    unreadMessagesCountSubscription =
+        ZendeskMessaging.unreadMessagesCountStream.listen((unreadCount) {
+          setState(() {
+            unreadMessageCount = unreadCount;
+          });
+        });
   }
 
   @override
@@ -51,63 +60,48 @@ class _MyAppState extends State<MyApp> {
             child: ListView(
               children: [
                 Text(message),
-                const SizedBox(
-                  height: 20,
-                ),
+                const SizedBox(height: 20),
                 ElevatedButton(
-                  onPressed: () => ZendeskMessaging.initialize(
-                    androidChannelKey: androidChannelKey,
-                    iosChannelKey: iosChannelKey,
-                  ),
+                  onPressed: _initialize,
                   child: const Text("Initialize"),
                 ),
                 if (isLogin) ...[
                   ElevatedButton(
-                    onPressed: () => ZendeskMessaging.show(),
+                    onPressed: _showMessaging,
                     child: const Text("Show messaging"),
                   ),
                   ElevatedButton(
-                    onPressed: () => _getUnreadMessageCount(),
-                    child:
-                        Text('Get unread message count - $unreadMessageCount'),
-                  ),
-                  ElevatedButton(
-                    onPressed: () => _listenUnreadMessageCount(),
-                    child: Text(
-                        'Listen unread message count - $unreadMessageCount'),
+                    onPressed: _getUnreadMessageCount,
+                    child: Text('Get unread message count - $unreadMessageCount'),
                   ),
                 ],
                 ElevatedButton(
-                  onPressed: () => _setTags(),
+                  onPressed: _setTags,
                   child: const Text("Add tags"),
                 ),
                 ElevatedButton(
-                  onPressed: () => _clearTags(),
+                  onPressed: _clearTags,
                   child: const Text("Clear tags"),
                 ),
                 ElevatedButton(
-                  onPressed: () => _login(),
+                  onPressed: _login,
                   child: const Text("Login"),
                 ),
                 ElevatedButton(
-                  onPressed: () => _logout(),
+                  onPressed: _logout,
                   child: const Text("Logout"),
                 ),
                 ElevatedButton(
-                  onPressed: () => _checkUserLoggedIn(),
+                  onPressed: _checkUserLoggedIn,
                   child: const Text("Check LoggedIn"),
                 ),
                 ElevatedButton(
-                  onPressed: () => _setFields(),
+                  onPressed: _setFields,
                   child: const Text("Add Fields"),
                 ),
                 ElevatedButton(
-                  onPressed: () => _clearFields(),
+                  onPressed: _clearFields,
                   child: const Text("Clear Fields"),
-                ),
-                ElevatedButton(
-                  onPressed: () => _show(),
-                  child: const Text("Show"),
                 ),
               ],
             ),
@@ -117,18 +111,32 @@ class _MyAppState extends State<MyApp> {
     );
   }
 
+  Future<void> _initialize() async {
+    try {
+      await ZendeskMessaging.initialize(
+        androidChannelKey: androidChannelKey,
+        iosChannelKey: iosChannelKey,
+      );
+      setState(() {
+        channelMessages.add("SDK initialized");
+      });
+    } catch (e) {
+      setState(() {
+        channelMessages.add("Initialization failed: $e");
+      });
+    }
+  }
+
   Future<void> _login() async {
-    // You can attach local observer when calling some methods to be notified when ready
     try {
       final response = await ZendeskMessaging.loginUser(jwt: 'my_jwt');
       setState(() {
-        channelMessages.add(
-            "Login observer - SUCCESS: ${response.id}, ${response.externalId}");
+        channelMessages.add("Login SUCCESS: ${response.id}, ${response.externalId}");
         isLogin = true;
       });
     } catch (e) {
       setState(() {
-        channelMessages.add("Login observer - FAILURE!");
+        channelMessages.add("Login FAILURE: $e");
         isLogin = false;
       });
     }
@@ -137,63 +145,56 @@ class _MyAppState extends State<MyApp> {
   Future<void> _logout() async {
     try {
       await ZendeskMessaging.logoutUser();
-      unreadMessagesCountSubscription?.cancel();
-    } catch (_) {}
-    setState(() {
-      isLogin = false;
-    });
-  }
-
-  void _getUnreadMessageCount() async {
-    final messageCount = await ZendeskMessaging.getUnreadMessageCount();
-    if (mounted) {
-      unreadMessageCount = messageCount;
-      setState(() {});
+      setState(() {
+        isLogin = false;
+        channelMessages.add("User logged out");
+      });
+    } catch (e) {
+      setState(() {
+        channelMessages.add("Logout error: $e");
+      });
     }
   }
 
-  void _listenUnreadMessageCount() async {
-    await ZendeskMessaging.listenUnreadMessages();
-
-    unreadMessagesCountSubscription =
-        ZendeskMessaging.unreadMessagesCountStream.listen((unreadCount) {
-      print('unread count changed: $unreadCount');
-      setState(() {
-        unreadMessageCount = unreadCount;
-      });
-    });
-  }
-
-  void _setTags() async {
-    final tags = ['tag1', 'tag2', 'tag3'];
-    await ZendeskMessaging.setConversationTags(tags);
-  }
-
-  void _clearTags() async {
-    await ZendeskMessaging.clearConversationTags();
-  }
-
-  void _checkUserLoggedIn() async {
-    final isLoggedIn = await ZendeskMessaging.isLoggedIn();
+  Future<void> _getUnreadMessageCount() async {
+    final count = await ZendeskMessaging.getUnreadMessageCount();
     setState(() {
-      channelMessages.add('User is ${isLoggedIn ? '' : 'not'} logged in');
+      unreadMessageCount = count;
+      channelMessages.add("Unread messages: $count");
     });
   }
 
-  void _setFields() async {
-    Map<String, String> fieldsMap = {};
-
-    fieldsMap["field1"] = "Value 1";
-    fieldsMap["field2"] = "Value 2";
-
-    await ZendeskMessaging.setConversationFields(fieldsMap);
+  Future<void> _setTags() async {
+    await ZendeskMessaging.setConversationTags(['tag1', 'tag2']);
+    setState(() => channelMessages.add("Tags set"));
   }
 
-  void _clearFields() async {
+  Future<void> _clearTags() async {
+    await ZendeskMessaging.clearConversationTags();
+    setState(() => channelMessages.add("Tags cleared"));
+  }
+
+  Future<void> _setFields() async {
+    await ZendeskMessaging.setConversationFields({
+      "field1": "Value 1",
+      "field2": "Value 2",
+    });
+    setState(() => channelMessages.add("Fields set"));
+  }
+
+  Future<void> _clearFields() async {
     await ZendeskMessaging.clearConversationFields();
+    setState(() => channelMessages.add("Fields cleared"));
   }
 
-  void _show() {
-    ZendeskMessaging.show();
+  Future<void> _checkUserLoggedIn() async {
+    final loggedIn = await ZendeskMessaging.isLoggedIn();
+    setState(() {
+      channelMessages.add("User is ${loggedIn ? '' : 'not '}logged in");
+    });
+  }
+
+  Future<void> _showMessaging() async {
+    await ZendeskMessaging.show();
   }
 }
