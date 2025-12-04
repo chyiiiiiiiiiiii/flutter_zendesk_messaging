@@ -44,11 +44,13 @@ public class SwiftZendeskMessagingPlugin: NSObject, FlutterPlugin {
         case "show":
             let args = call.arguments as? [String: Any]
             let viewMode = args?["viewMode"] as? String
+            let exitAction = args?["exitAction"] as? String  
             let root = UIApplication.shared.windows.first(where: { $0.isKeyWindow })?.rootViewController
             zendeskMessaging.show(
                 rootViewController: root,
                 navigationController: nil,
                 viewMode: viewMode,
+                exitAction: exitAction,  
                 useNavigation: false,
                 flutterResult: result
             )
@@ -56,11 +58,13 @@ public class SwiftZendeskMessagingPlugin: NSObject, FlutterPlugin {
         case "showInNavigation":
             let args = call.arguments as? [String: Any]
             let viewMode = args?["viewMode"] as? String
+            let exitAction = args?["exitAction"] as? String  
             let root = UIApplication.shared.windows.first(where: { $0.isKeyWindow })?.rootViewController
             zendeskMessaging.show(
                 rootViewController: root,
                 navigationController: root as? UINavigationController,
                 viewMode: viewMode,
+                exitAction: exitAction,  
                 useNavigation: true,
                 flutterResult: result
             )
@@ -68,10 +72,16 @@ public class SwiftZendeskMessagingPlugin: NSObject, FlutterPlugin {
         case "startNewConversation":
             let args = call.arguments as? [String: Any]
             let viewMode = args?["viewMode"] as? String
+            let exitAction = args?["exitAction"] as? String  
+            let preFilledFields = args?["preFilledFields"] as? [String: String]  
+            let tags = args?["tags"] as? [String]  
             let root = UIApplication.shared.windows.first(where: { $0.isKeyWindow })?.rootViewController
             zendeskMessaging.startNewConversation(
                 rootViewController: root,
                 viewMode: viewMode,
+                exitAction: exitAction,  
+                preFilledFields: preFilledFields,
+                tags: tags,
                 flutterResult: result
             )
 
