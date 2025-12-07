@@ -42,9 +42,7 @@ class ZendeskMessagingPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                 zendeskMessaging.initialize(channelKey, result)
             }
 
-            "isInitialized" -> {
-                result.success(isInitialized)
-            }
+            "isInitialized" -> result.success(isInitialized)
 
             "invalidate" -> {
                 if (!isInitialized) {
@@ -52,8 +50,13 @@ class ZendeskMessagingPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                     result.error("not_initialized", "Zendesk SDK is not initialized", null)
                     return
                 }
-                zendeskMessaging.invalidate()
-                result.success(null)
+                try {
+                    zendeskMessaging.invalidate()
+                    result.success(null)
+                } catch (e: Exception) {
+                    Log.e(tag, "Error invalidating SDK: ${e.message}")
+                    result.error("invalidate_error", e.message, null)
+                }
             }
 
             // ====================================================================
@@ -108,12 +111,15 @@ class ZendeskMessagingPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                     reportNotInitializedError(result)
                     return
                 }
-                zendeskMessaging.logoutUser(result)
+                try {
+                    zendeskMessaging.logoutUser(result)
+                } catch (e: Exception) {
+                    Log.e(tag, "Error logging out: ${e.message}")
+                    result.error("logout_error", e.message, null)
+                }
             }
 
-            "isLoggedIn" -> {
-                result.success(isLoggedIn)
-            }
+            "isLoggedIn" -> result.success(isLoggedIn)
 
             // ====================================================================
             // Conversation Tags
@@ -238,9 +244,7 @@ class ZendeskMessagingPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                 }
             }
 
-            else -> {
-                result.notImplemented()
-            }
+            else -> result.notImplemented()
         }
     }
 

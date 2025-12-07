@@ -2,6 +2,7 @@ import UIKit
 import ZendeskSDK
 import ZendeskSDKMessaging
 import Flutter
+import UserNotifications
 
 public class ZendeskMessaging: NSObject {
 
@@ -45,7 +46,6 @@ public class ZendeskMessaging: NSObject {
                 case .failure(let error):
                     self?.flutterPlugin?.setInitialized(false)
                     print("❌ Zendesk init error: \(error.localizedDescription)")
-                    print("❌ Full error details: \(error)")
                     flutterResult(FlutterError(code: "initialize_error",
                                                message: error.localizedDescription,
                                                details: "\(error)"))
@@ -54,13 +54,11 @@ public class ZendeskMessaging: NSObject {
         }
     }
 
-
-    // MARK: - Show Chat (Resume Existing Conversation)
-    /// Show the most recent conversation - use this for existing chats
+    // MARK: - Show Chat
     func show(rootViewController: UIViewController?,
               navigationController: UINavigationController? = nil,
               viewMode: String?,
-              exitAction: String?,  // ← Add this parameter
+              exitAction: String?,
               useNavigation: Bool = false,
               flutterResult: @escaping FlutterResult) {
 
@@ -69,11 +67,10 @@ public class ZendeskMessaging: NSObject {
             return
         }
 
-        // Parse exit action from Flutter
         let action = parseExitAction(exitAction)
 
         guard let messagingVC = Zendesk.instance?.messaging?.messagingViewController(
-            .showMostRecentConversation(exitAction: action)  // ← Use parsed action
+            .showMostRecentConversation(exitAction: action)
         ) else {
             flutterResult(FlutterError(code: "show_error",
                                        message: "Unable to create messaging VC",
@@ -103,10 +100,9 @@ public class ZendeskMessaging: NSObject {
     }
 
     // MARK: - Start New Conversation
-    /// Start a new conversation - creates fresh ticket form
     func startNewConversation(rootViewController: UIViewController?,
                               viewMode: String?,
-                              exitAction: String?,  // ← Add this parameter
+                              exitAction: String?,
                               preFilledFields: [String: String]? = nil,
                               tags: [String]? = nil,
                               flutterResult: @escaping FlutterResult) {
@@ -133,11 +129,10 @@ public class ZendeskMessaging: NSObject {
             messaging.setConversationTags(tagList)
         }
 
-        // Parse exit action from Flutter
         let action = parseExitAction(exitAction)
 
         let messagingVC = messaging.messagingViewController(
-            .showNewConversation(exitAction: action)  // ← Use parsed action
+            .showNewConversation(exitAction: action)
         )
 
         let mode = ZendeskViewMode(rawValue: viewMode ?? "automatic") ?? .automatic
@@ -163,24 +158,23 @@ public class ZendeskMessaging: NSObject {
 
     // MARK: - Helper to Parse Exit Action
     private func parseExitAction(_ exitAction: String?) -> ExitAction {
-        guard let action = exitAction?.lowercased() else {
-            return .close // Default
-        }
+       guard let action = exitAction?.lowercased() else {
+           return .close // Default
+       }
 
-        switch action {
-        case "close":
-            return .close
+       switch action {
+       case "close":
+           return .close
 
-        case "returntoconversationlist",
-             "return_to_conversation_list",
-             "returntoconversationlist",
-             "returntoconversationlist":
-            return .returnToConversationList
+       case "returntoconversationlist",
+            "return_to_conversation_list":
+           return .returnToConversationList
 
-        default:
-            return .close
-        }
+       default:
+           return .close
+       }
     }
+
 
     // MARK: - Login / Logout
     func loginUser(jwt: String, flutterResult: @escaping FlutterResult) {
@@ -247,77 +241,38 @@ public class ZendeskMessaging: NSObject {
 
         zendesk.addEventObserver(self) { [weak self] event in
             guard let self = self else { return }
-
+            var payload: [String: Any] = ["timestamp": Int(Date().timeIntervalSince1970 * 1000)]
             switch event {
-            // ✅ Real conversation started - get real ID from event
             case .conversationStarted(_, _, let conversationId):
                 self.currentConversationId = conversationId
-                let payload: [String: Any] = [
-                    "type": "conversation_started",
-                    "conversationId": conversationId,
-                    "timestamp": Int(Date().timeIntervalSince1970 * 1000)
-                ]
-                self.channel.invokeMethod("onEvent", arguments: payload)
-
+                payload["type"] = "conversation_started"
+                payload["conversationId"] = conversationId
             case .conversationOpened(_, _, let conversationId):
                 self.currentConversationId = conversationId
-                let payload: [String: Any] = [
-                    "type": "conversation_opened",
-                    "conversationId": conversationId ?? "",
-                    "timestamp": Int(Date().timeIntervalSince1970 * 1000)
-                ]
-                self.channel.invokeMethod("onEvent", arguments: payload)
-
+                payload["type"] = "conversation_opened"
+                payload["conversationId"] = conversationId ?? ""
             case .messagesShown(_, _, let conversationId, _):
-                let payload: [String: Any] = [
-                    "type": "messaging_opened",
-                    "conversationId": conversationId,
-                    "timestamp": Int(Date().timeIntervalSince1970 * 1000)
-                ]
-                self.channel.invokeMethod("onEvent", arguments: payload)
-
-            case .unreadMessageCountChanged(let currentUnreadCount):
-                let payload: [String: Any] = [
-                    "type": "unread_message_count_changed",
-                    "currentUnreadCount": currentUnreadCount,
-                    "timestamp": Int(Date().timeIntervalSince1970 * 1000)
-                ]
-                self.channel.invokeMethod("onEvent", arguments: payload)
-
+                payload["type"] = "messaging_opened"
+                payload["conversationId"] = conversationId
+            case .unreadMessageCountChanged(let count):
+                payload["type"] = "unread_message_count_changed"
+                payload["currentUnreadCount"] = count
             case .authenticationFailed(let error):
-                let payload: [String: Any] = [
-                    "type": "authentication_failed",
-                    "error": error.localizedDescription
-                ]
-                self.channel.invokeMethod("onEvent", arguments: payload)
-
+                payload["type"] = "authentication_failed"
+                payload["error"] = error.localizedDescription
             case .conversationAdded(let conversationId):
-                let payload: [String: Any] = [
-                    "type": "conversation_added",
-                    "conversationId": conversationId,
-                    "timestamp": Int(Date().timeIntervalSince1970 * 1000)
-                ]
-                self.channel.invokeMethod("onEvent", arguments: payload)
-
+                payload["type"] = "conversation_added"
+                payload["conversationId"] = conversationId
             case .connectionStatusChanged(let status):
-                let payload: [String: Any] = [
-                    "type": "connection_status_changed",
-                    "connectionStatus": status.stringValue,
-                    "timestamp": Int(Date().timeIntervalSince1970 * 1000)
-                ]
-                self.channel.invokeMethod("onEvent", arguments: payload)
-
+                payload["type"] = "connection_status_changed"
+                payload["connectionStatus"] = status.stringValue
             case .sendMessageFailed(let error):
-                let payload: [String: Any] = [
-                    "type": "send_message_failed",
-                    "error": error.localizedDescription,
-                    "timestamp": Int(Date().timeIntervalSince1970 * 1000)
-                ]
-                self.channel.invokeMethod("onEvent", arguments: payload)
-
+                payload["type"] = "send_message_failed"
+                payload["error"] = error.localizedDescription
             default:
                 break
             }
+            self.channel.invokeMethod("onEvent", arguments: payload)
         }
     }
 
@@ -342,9 +297,8 @@ public class ZendeskMessaging: NSObject {
             }
         }
     }
-}
 
-extension ZendeskMessaging {
+    // MARK: - Invalidate
     func invalidate() {
         if let instance = Zendesk.instance {
             instance.removeEventObserver(self)
@@ -357,6 +311,69 @@ extension ZendeskMessaging {
         flutterPlugin?.setLoggedIn(false)
     }
 }
+
+// MARK: - Push Notification Integration
+extension ZendeskMessaging: UNUserNotificationCenterDelegate {
+
+    /// Setup UNUserNotificationCenter delegate
+    func setupPushNotifications() {
+        UNUserNotificationCenter.current().delegate = self
+    }
+
+    /// Called when APNs registration succeeds
+    public func didRegisterForRemoteNotifications(deviceToken: Data) {
+        PushNotifications.updatePushNotificationToken(deviceToken)
+        print("✅ Zendesk device token registered: \(deviceToken.map { String(format: "%02.2hhx", $0) }.joined())")
+    }
+
+    /// Called when APNs registration fails
+    public func didFailToRegisterForRemoteNotifications(error: Error) {
+        print("❌ Failed to register for APNs: \(error.localizedDescription)")
+    }
+
+    /// Handle foreground notifications
+    private func handleForegroundNotification(_ userInfo: [AnyHashable: Any],
+                                              completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+        let resp = PushNotifications.shouldBeDisplayed(userInfo)
+        switch resp {
+        case .messagingShouldDisplay:
+            if #available(iOS 14.0, *) {
+                completionHandler([.banner, .sound, .badge])
+            } else {
+                completionHandler([.alert, .sound, .badge])
+            }
+        case .messagingShouldNotDisplay, .notFromMessaging:
+            completionHandler([])
+        @unknown default:
+            completionHandler([])
+        }
+    }
+
+    /// Handle notification tap
+    private func handleNotificationTap(_ userInfo: [AnyHashable: Any]) {
+        let resp = PushNotifications.shouldBeDisplayed(userInfo)
+        if resp == .messagingShouldDisplay {
+            PushNotifications.handleTap(userInfo, completion: nil)
+        }
+    }
+
+    // MARK: - UNUserNotificationCenterDelegate
+
+    public func userNotificationCenter(_ center: UNUserNotificationCenter,
+                                       willPresent notification: UNNotification,
+                                       withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+        handleForegroundNotification(notification.request.content.userInfo,
+                                     completionHandler: completionHandler)
+    }
+
+    public func userNotificationCenter(_ center: UNUserNotificationCenter,
+                                       didReceive response: UNNotificationResponse,
+                                       withCompletionHandler completionHandler: @escaping () -> Void) {
+        handleNotificationTap(response.notification.request.content.userInfo)
+        completionHandler()
+    }
+}
+
 
 // MARK: - MessagingViewControllerWrapper
 class MessagingViewControllerWrapper: UIViewController {

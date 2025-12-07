@@ -2,11 +2,12 @@ import Flutter
 import UIKit
 import ZendeskSDK
 import ZendeskSDKMessaging
+import UserNotifications
 
 public class SwiftZendeskMessagingPlugin: NSObject, FlutterPlugin {
     private let channel: FlutterMethodChannel
 
-    // MARK: - State flags (mirrors Android implementation)
+    // MARK: - State flags
     fileprivate(set) var isInitialized: Bool = false
     fileprivate(set) var isLoggedIn: Bool = false
 
@@ -17,6 +18,7 @@ public class SwiftZendeskMessagingPlugin: NSObject, FlutterPlugin {
     init(channel: FlutterMethodChannel) {
         self.channel = channel
         super.init()
+        zendeskMessaging.setupPushNotifications() // Setup APNs delegate forwarding
     }
 
     public static func register(with registrar: FlutterPluginRegistrar) {
@@ -26,9 +28,10 @@ public class SwiftZendeskMessagingPlugin: NSObject, FlutterPlugin {
         registrar.addMethodCallDelegate(instance, channel: channel)
     }
 
-    // MARK: - FlutterPlugin
+    // MARK: - FlutterPlugin Method Call Handler
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         switch call.method {
+
         case "initialize":
             guard
                 let args = call.arguments as? [String: Any],
@@ -44,13 +47,13 @@ public class SwiftZendeskMessagingPlugin: NSObject, FlutterPlugin {
         case "show":
             let args = call.arguments as? [String: Any]
             let viewMode = args?["viewMode"] as? String
-            let exitAction = args?["exitAction"] as? String  
+            let exitAction = args?["exitAction"] as? String
             let root = UIApplication.shared.windows.first(where: { $0.isKeyWindow })?.rootViewController
             zendeskMessaging.show(
                 rootViewController: root,
                 navigationController: nil,
                 viewMode: viewMode,
-                exitAction: exitAction,  
+                exitAction: exitAction,
                 useNavigation: false,
                 flutterResult: result
             )
@@ -58,13 +61,13 @@ public class SwiftZendeskMessagingPlugin: NSObject, FlutterPlugin {
         case "showInNavigation":
             let args = call.arguments as? [String: Any]
             let viewMode = args?["viewMode"] as? String
-            let exitAction = args?["exitAction"] as? String  
+            let exitAction = args?["exitAction"] as? String
             let root = UIApplication.shared.windows.first(where: { $0.isKeyWindow })?.rootViewController
             zendeskMessaging.show(
                 rootViewController: root,
                 navigationController: root as? UINavigationController,
                 viewMode: viewMode,
-                exitAction: exitAction,  
+                exitAction: exitAction,
                 useNavigation: true,
                 flutterResult: result
             )
@@ -72,14 +75,14 @@ public class SwiftZendeskMessagingPlugin: NSObject, FlutterPlugin {
         case "startNewConversation":
             let args = call.arguments as? [String: Any]
             let viewMode = args?["viewMode"] as? String
-            let exitAction = args?["exitAction"] as? String  
-            let preFilledFields = args?["preFilledFields"] as? [String: String]  
-            let tags = args?["tags"] as? [String]  
+            let exitAction = args?["exitAction"] as? String
+            let preFilledFields = args?["preFilledFields"] as? [String: String]
+            let tags = args?["tags"] as? [String]
             let root = UIApplication.shared.windows.first(where: { $0.isKeyWindow })?.rootViewController
             zendeskMessaging.startNewConversation(
                 rootViewController: root,
                 viewMode: viewMode,
-                exitAction: exitAction,  
+                exitAction: exitAction,
                 preFilledFields: preFilledFields,
                 tags: tags,
                 flutterResult: result
@@ -131,8 +134,7 @@ public class SwiftZendeskMessagingPlugin: NSObject, FlutterPlugin {
             result(nil)
 
         case "getUnreadMessageCount":
-            let count = zendeskMessaging.getUnreadMessageCount()
-            result(count)
+            result(zendeskMessaging.getUnreadMessageCount())
 
         case "isInitialized":
             result(isInitialized)
@@ -145,11 +147,10 @@ public class SwiftZendeskMessagingPlugin: NSObject, FlutterPlugin {
             result(nil)
 
         case "updatePushNotificationToken":
-            // iOS-only helper, expects a base64 string token from Dart.
             if let args = call.arguments as? [String: Any],
                let tokenString = args["token"] as? String,
                let tokenData = Data(base64Encoded: tokenString) {
-                PushNotifications.updatePushNotificationToken(tokenData)
+                zendeskMessaging.didRegisterForRemoteNotifications(deviceToken: tokenData)
                 result(nil)
             } else {
                 result(FlutterError(code: "invalid_args",
@@ -162,12 +163,7 @@ public class SwiftZendeskMessagingPlugin: NSObject, FlutterPlugin {
         }
     }
 
-    // MARK: - Internal helpers used by ZendeskMessaging
-    func setInitialized(_ value: Bool) {
-        isInitialized = value
-    }
-
-    func setLoggedIn(_ value: Bool) {
-        isLoggedIn = value
-    }
+    // MARK: - Internal helpers
+    func setInitialized(_ value: Bool) { isInitialized = value }
+    func setLoggedIn(_ value: Bool) { isLoggedIn = value }
 }

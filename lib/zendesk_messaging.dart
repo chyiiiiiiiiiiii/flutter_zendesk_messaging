@@ -18,7 +18,6 @@ enum ZendeskViewMode { fullscreen, sheet, pageSheet, formSheet, automatic }
 /// Exit action for messaging screen
 enum ZendeskExitAction { close, returnToConversationList }
 
-/// Extension to convert exit action to string
 extension ZendeskExitActionExtension on ZendeskExitAction {
   String get value {
     switch (this) {
@@ -41,9 +40,9 @@ class ZendeskUIEvent {
   ZendeskUIEvent(this.type, {this.dismissType, DateTime? timestamp}) : timestamp = timestamp ?? DateTime.now();
 }
 
-/// Conversation event payload
+/// Conversation events
 class ZendeskConversationEvent {
-  final String event; // e.g., conversation_started, conversation_opened
+  final String event;
   final String? conversationId;
   final String? ticketId;
   final Map<String, dynamic>? payload;
@@ -51,7 +50,7 @@ class ZendeskConversationEvent {
   ZendeskConversationEvent(this.event, {this.conversationId, this.ticketId, this.payload});
 }
 
-/// Ticket status update
+/// Ticket status
 class ZendeskTicketStatus {
   final String ticketId;
   final String? conversationId;
@@ -71,14 +70,14 @@ class ZendeskTicketStatus {
   }
 }
 
-/// Zendesk authentication failure
+/// Authentication failure
 class ZendeskAuthFailure {
   final String error;
 
   ZendeskAuthFailure(this.error);
 }
 
-/// Public API for Zendesk Messaging
+/// Main plugin class
 class ZendeskMessaging {
   static const MethodChannel _channel = MethodChannel('zendesk_messaging');
   static bool _handlerInitialized = false;
@@ -89,6 +88,7 @@ class ZendeskMessaging {
   static final _messagingUIController = StreamController<ZendeskUIEvent>.broadcast();
   static final _authFailureController = StreamController<ZendeskAuthFailure>.broadcast();
   static final _ticketStatusController = StreamController<ZendeskTicketStatus>.broadcast();
+  static final _notificationTapController = StreamController<Map<String, dynamic>>.broadcast();
 
   // Stream getters
   static Stream<int> get unreadMessagesCountStream => _unreadMessagesController.stream;
@@ -101,17 +101,18 @@ class ZendeskMessaging {
 
   static Stream<ZendeskTicketStatus> get ticketStatusStream => _ticketStatusController.stream;
 
-  /// Initialize method call handler (called once)
+  static Stream<Map<String, dynamic>> get notificationTapStream => _notificationTapController.stream;
+
+  /// Initialize method handler
   static void _initializeMethodHandler() {
     if (_handlerInitialized) return;
-
     debugPrint('[ZendeskMessaging] Setting up method call handler');
     _channel.setMethodCallHandler(_onMethodCall);
     _handlerInitialized = true;
     debugPrint('[ZendeskMessaging] Method call handler initialized');
   }
 
-  /// Initialize Zendesk Messaging SDK
+  /// Initialize Zendesk SDK
   static Future<void> initialize({required String androidChannelKey, required String iosChannelKey}) async {
     _initializeMethodHandler();
 
@@ -122,28 +123,7 @@ class ZendeskMessaging {
     debugPrint('[ZendeskMessaging] Native initialize completed');
   }
 
-  /// Start a new conversation (ticket)
-  static Future<ZendeskTicketStatus?> startNewConversation({
-    ZendeskViewMode viewMode = ZendeskViewMode.fullscreen,
-    ZendeskExitAction exitAction = ZendeskExitAction.close,
-    Map<String, String>? preFilledFields,
-    List<String>? tags,
-  }) async {
-    final result = await _channel.invokeMethod('startNewConversation', {
-      if (Platform.isIOS) 'viewMode': viewMode.name,
-      if (Platform.isIOS) 'exitAction': exitAction.value,
-      if (preFilledFields != null && preFilledFields.isNotEmpty) 'preFilledFields': preFilledFields,
-      if (tags != null && tags.isNotEmpty) 'tags': tags,
-    });
-
-    if (result is Map) {
-      final safeMap = Map<String, dynamic>.from(result);
-      return ZendeskTicketStatus.fromMap(safeMap);
-    }
-    return null;
-  }
-
-  /// Show the chat UI
+  /// Show messaging UI
   static Future<void> show({
     ZendeskViewMode viewMode = ZendeskViewMode.fullscreen,
     ZendeskExitAction exitAction = ZendeskExitAction.close,
@@ -162,7 +142,27 @@ class ZendeskMessaging {
     }
   }
 
-  /// Login a user with JWT
+  /// Start a new conversation
+  static Future<ZendeskTicketStatus?> startNewConversation({
+    ZendeskViewMode viewMode = ZendeskViewMode.fullscreen,
+    ZendeskExitAction exitAction = ZendeskExitAction.close,
+    Map<String, String>? preFilledFields,
+    List<String>? tags,
+  }) async {
+    final result = await _channel.invokeMethod('startNewConversation', {
+      if (Platform.isIOS) 'viewMode': viewMode.name,
+      if (Platform.isIOS) 'exitAction': exitAction.value,
+      if (preFilledFields != null && preFilledFields.isNotEmpty) 'preFilledFields': preFilledFields,
+      if (tags != null && tags.isNotEmpty) 'tags': tags,
+    });
+
+    if (result is Map) {
+      return ZendeskTicketStatus.fromMap(Map<String, dynamic>.from(result));
+    }
+    return null;
+  }
+
+  /// Login / logout
   static Future<ZendeskLoginResponse> loginUser({required String jwt}) async {
     final result = await _channel.invokeMethod('loginUser', {'jwt': jwt});
     if (result is Map) {
@@ -186,12 +186,16 @@ class ZendeskMessaging {
 
   static Future<void> clearConversationFields() => _channel.invokeMethod('clearConversationFields');
 
-  /// Unread messages count
+  /// Unread messages
   static Future<int> getUnreadMessageCount() async => await _channel.invokeMethod('getUnreadMessageCount') ?? 0;
 
-  /// Push notification token
+  /// Push notification support
   static Future<void> updatePushNotificationToken(String token) async {
     await _channel.invokeMethod('updatePushNotificationToken', {'token': token});
+  }
+
+  static Future<void> handlePushNotification(Map<String, dynamic> data) async {
+    await _channel.invokeMethod('handlePushNotification', {'data': data});
   }
 
   /// Plugin state
@@ -207,21 +211,22 @@ class ZendeskMessaging {
 
     final args = call.arguments is Map ? Map<String, dynamic>.from(call.arguments as Map) : <String, dynamic>{};
 
-    if (call.method != 'onEvent') {
-      debugPrint('[ZendeskMessaging] Unknown method: ${call.method} with args: $args');
-      return;
+    switch (call.method) {
+      case 'onEvent':
+        _handleNativeEvent(args);
+        break;
+      case 'notification_tap':
+        _notificationTapController.add(args);
+        break;
+      default:
+        debugPrint('[ZendeskMessaging] Unknown method: ${call.method}');
     }
+  }
 
-    // Normalize event type: convert camelCase to snake_case
+  static void _handleNativeEvent(Map<String, dynamic> args) {
     String? eventType = args['type']?.toString();
     if (eventType != null) {
-      // Convert CamelCase or camelCase to snake_case
-      eventType = eventType
-          .replaceAllMapped(
-            RegExp(r'([a-z0-9])([A-Z])'),
-            (Match m) => '${m[1]}_${m[2]}',
-          )
-          .toLowerCase();
+      eventType = eventType.replaceAllMapped(RegExp(r'([a-z0-9])([A-Z])'), (m) => '${m[1]}_${m[2]}').toLowerCase();
     }
 
     debugPrint('[ZendeskMessaging] Event type: $eventType, args: $args');
@@ -243,18 +248,15 @@ class ZendeskMessaging {
       case 'conversation_opened':
       case 'conversation_started':
       case 'messages_shown':
-        if (!_conversationEventsController.isClosed) {
-          final convId = args['conversationId']?.toString();
-          final ticketId = args['ticketId']?.toString();
-          _conversationEventsController.add(
-            ZendeskConversationEvent(
-              eventType ?? 'conversation_event',
-              conversationId: convId,
-              ticketId: ticketId,
-              payload: args,
-            ),
-          );
-        }
+        _conversationEventsController.add(
+          ZendeskConversationEvent(
+            eventType ?? 'conversation_event',
+            conversationId: args['conversationId']?.toString(),
+            ticketId: args['ticketId']?.toString(),
+            payload: args,
+          ),
+        );
+
         break;
 
       case 'messaging_ui_event':
@@ -291,15 +293,11 @@ class ZendeskMessaging {
 
       case 'authentication_failed':
       case 'send_message_failed':
-        if (!_authFailureController.isClosed) {
-          _authFailureController.add(
-            ZendeskAuthFailure(args['error']?.toString() ?? 'Unknown'),
-          );
-        }
+        _authFailureController.add(ZendeskAuthFailure(args['error']?.toString() ?? 'Unknown'));
         break;
 
       default:
-        debugPrint('[ZendeskMessaging] Unknown onEvent type: $eventType; args: $args');
+        debugPrint('[ZendeskMessaging] Unknown event type: $eventType');
     }
   }
 
@@ -310,5 +308,6 @@ class ZendeskMessaging {
     if (!_authFailureController.isClosed) _authFailureController.close();
     if (!_messagingUIController.isClosed) _messagingUIController.close();
     if (!_ticketStatusController.isClosed) _ticketStatusController.close();
+    if (!_notificationTapController.isClosed) _notificationTapController.close();
   }
 }

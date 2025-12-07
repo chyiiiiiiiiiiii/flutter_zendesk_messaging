@@ -53,4 +53,8 @@ android {
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     implementation "zendesk.messaging:messaging-android:2.36.0"
+
+    // Firebase Messaging
+    implementation platform("com.google.firebase:firebase-bom:32.3.0")
+    implementation "com.google.firebase:firebase-messaging-ktx"
 }
