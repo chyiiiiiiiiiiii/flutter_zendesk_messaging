@@ -216,4 +216,30 @@ class ZendeskMessaging {
       debugPrint('ZendeskMessaging - clearConversationFields - Error: $e}');
     }
   }
+
+  /// Handle incoming push notification from Firebase
+  ///
+  /// Processes the notification data and automatically opens the Zendesk messaging
+  /// interface if the notification contains Zendesk-specific keys (`zendesk`, `zd`, or keys containing "zendesk").
+  ///
+  /// **Note:** Zendesk must be initialized before calling this method.
+  ///
+  /// Example usage:
+  /// ```dart
+  /// FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+  ///   if (message.data.containsKey('zendesk') || message.data.containsKey('zd')) {
+  ///     ZendeskMessaging.handlePushNotification(message.data);
+  ///   }
+  /// });
+  /// ```
+  ///
+  /// @param data The notification data payload as a Map<String, dynamic>
+  static Future<void> handlePushNotification(Map<String, dynamic> data) async {
+    try {
+      await _channel.invokeMethod('handlePushNotification', {'data': data});
+    } catch (e) {
+      debugPrint('ZendeskMessaging - handlePushNotification - Error: $e}');
+      rethrow;
+    }
+  }
 }

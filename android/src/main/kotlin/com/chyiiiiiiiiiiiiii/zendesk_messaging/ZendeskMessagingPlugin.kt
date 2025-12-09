@@ -174,6 +174,24 @@ class ZendeskMessagingPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                 result.success(null)
             }
 
+            "handlePushNotification" -> {
+                if (!isInitialized) {
+                    println("$tag - Zendesk SDK needs to be initialized first")
+                    reportNotInitializedFlutterError(result)
+                    return
+                }
+                try {
+                    val data = call.argument<Map<String, Any>>("data")
+                        ?: throw Exception("data is empty or null")
+                    zendeskMessaging.handlePushNotification(data)
+                    result.success(null)
+                } catch (err: Throwable) {
+                    println("$tag - ZendeskMessaging::handlePushNotification invalid arguments. {'data': Map<String, Any>} expected !")
+                    println(err.message)
+                    result.error("handle_push_notification_error", err.message, null)
+                }
+            }
+
             else -> {
                 result.notImplemented()
             }

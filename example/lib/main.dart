@@ -69,7 +69,7 @@ class _MyAppState extends State<MyApp> {
                   ElevatedButton(
                     onPressed: () => _getUnreadMessageCount(),
                     child:
-                        Text('Get unread message count - $unreadMessageCount'),
+                    Text('Get unread message count - $unreadMessageCount'),
                   ),
                   ElevatedButton(
                     onPressed: () => _listenUnreadMessageCount(),
@@ -108,6 +108,14 @@ class _MyAppState extends State<MyApp> {
                 ElevatedButton(
                   onPressed: () => _show(),
                   child: const Text("Show"),
+                ),
+                ElevatedButton(
+                  onPressed: () => _testHandlePushNotification(),
+                  child: const Text("Test Handle Push Notification (Zendesk)"),
+                ),
+                ElevatedButton(
+                  onPressed: () => _testHandleNonZendeskNotification(),
+                  child: const Text("Test Handle Push Notification (Non-Zendesk)"),
                 ),
               ],
             ),
@@ -157,11 +165,11 @@ class _MyAppState extends State<MyApp> {
 
     unreadMessagesCountSubscription =
         ZendeskMessaging.unreadMessagesCountStream.listen((unreadCount) {
-      print('unread count changed: $unreadCount');
-      setState(() {
-        unreadMessageCount = unreadCount;
-      });
-    });
+          print('unread count changed: $unreadCount');
+          setState(() {
+            unreadMessageCount = unreadCount;
+          });
+        });
   }
 
   void _setTags() async {
@@ -195,5 +203,69 @@ class _MyAppState extends State<MyApp> {
 
   void _show() {
     ZendeskMessaging.show();
+  }
+
+  Future<void> _testHandlePushNotification() async {
+    try {
+      // Check if Zendesk is initialized first
+      final isInitialized = await ZendeskMessaging.isInitialized();
+      if (!isInitialized) {
+        setState(() {
+          channelMessages.add('ERROR: Please initialize Zendesk first! Click "Initialize" button.');
+        });
+        return;
+      }
+
+      // Simulate a Zendesk push notification payload
+      // This mimics what Firebase would send for a Zendesk notification
+      final mockNotificationData = {
+        'zendesk': 'true',
+        'zd.conversation_id': '12345',
+        'zd.message_id': '67890',
+        'title': 'New message from Zendesk',
+        'body': 'You have a new message in your support conversation',
+        'click_action': 'FLUTTER_NOTIFICATION_CLICK',
+      };
+
+      await ZendeskMessaging.handlePushNotification(mockNotificationData);
+
+      setState(() {
+        channelMessages.add('✓ Zendesk push notification handled - messaging interface should open');
+      });
+    } catch (e) {
+      setState(() {
+        channelMessages.add('✗ Push notification error: $e');
+      });
+    }
+  }
+
+  Future<void> _testHandleNonZendeskNotification() async {
+    try {
+      // Check if Zendesk is initialized first
+      final isInitialized = await ZendeskMessaging.isInitialized();
+      if (!isInitialized) {
+        setState(() {
+          channelMessages.add('ERROR: Please initialize Zendesk first! Click "Initialize" button.');
+        });
+        return;
+      }
+
+      // Simulate a non-Zendesk push notification payload
+      final mockNotificationData = {
+        'title': 'Regular notification',
+        'body': 'This is not a Zendesk notification',
+        'click_action': 'FLUTTER_NOTIFICATION_CLICK',
+      };
+
+      await ZendeskMessaging.handlePushNotification(mockNotificationData);
+
+      setState(() {
+        channelMessages.add('✓ Non-Zendesk push notification handled - should be ignored (check logs)');
+      });
+    } catch (e) {
+      setState(() {
+        channelMessages.add('✗ Push notification error: $e');
+      });
+    }
   }
 }

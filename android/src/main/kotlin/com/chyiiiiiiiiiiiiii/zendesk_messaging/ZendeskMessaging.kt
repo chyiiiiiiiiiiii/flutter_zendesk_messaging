@@ -119,4 +119,29 @@ class ZendeskMessaging(
     fun clearConversationFields() {
         Zendesk.instance.messaging.clearConversationFields()
     }
+
+    fun handlePushNotification(data: Map<String, Any>) {
+        try {
+            println("$TAG - Handling push notification with data: ${data.keys}")
+
+            // Check if this is a Zendesk notification by looking for Zendesk-specific keys
+            // Zendesk notifications typically contain keys like "zendesk", "zd", or have zendesk in the key name
+            val isZendeskNotification = data.containsKey("zendesk") ||
+                    data.containsKey("zd") ||
+                    data.any { it.key.lowercase().contains("zendesk") }
+
+            if (isZendeskNotification) {
+                println("$TAG - Zendesk push notification detected, showing messaging interface")
+                // Show the messaging interface when a Zendesk notification is received
+                // This follows the same pattern as the show() method
+                Zendesk.instance.messaging.showMessaging(plugin.activity!!, Intent.FLAG_ACTIVITY_NEW_TASK)
+                println("$TAG - Push notification handled successfully")
+            } else {
+                println("$TAG - Non-Zendesk push notification, ignoring")
+            }
+        } catch (error: Throwable) {
+            println("$TAG - Failed to handle push notification: ${error.message}")
+            throw error
+        }
+    }
 }
