@@ -93,7 +93,7 @@ class ZendeskMessaging(
             val activity = plugin.activity ?: return
             Zendesk.instance.messaging.showMessaging(
                 activity,
-                MessagingScreen.MostRecentActiveConversation(onExit = MessagingScreen.ExitAction.Close)
+                MessagingScreen.NewConversation(onExit = MessagingScreen.ExitAction.Close)
             )
             Log.d(TAG, "Start new conversation (default behavior)")
         } catch (e: Exception) {
