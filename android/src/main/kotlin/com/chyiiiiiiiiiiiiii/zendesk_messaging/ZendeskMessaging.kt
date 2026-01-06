@@ -1,5 +1,6 @@
 package com.chyiiiiiiiiiiiiii.zendesk_messaging
 
+import android.content.Context
 import io.flutter.plugin.common.MethodChannel
 import zendesk.android.Zendesk
 import zendesk.android.ZendeskUser
@@ -7,6 +8,8 @@ import zendesk.android.events.ZendeskEvent
 import zendesk.android.events.ZendeskEventListener
 import zendesk.android.messaging.MessagingScreen
 import zendesk.messaging.android.DefaultMessagingFactory
+import zendesk.messaging.android.push.PushNotifications
+import zendesk.messaging.android.push.PushResponsibility
 
 class ZendeskMessaging(
     private val plugin: ZendeskMessagingPlugin,
@@ -484,5 +487,88 @@ class ZendeskMessaging(
     fun clearConversationFields() {
         Zendesk.instance.messaging.clearConversationFields()
         println("$TAG - clearConversationFields")
+    }
+
+    // ============================================================================
+    // Push Notifications
+    // ============================================================================
+
+    /**
+     * Update the push notification token with Zendesk.
+     * Call this when receiving a new FCM token.
+     */
+    fun updatePushNotificationToken(token: String) {
+        try {
+            PushNotifications.updatePushNotificationToken(token)
+            println("$TAG - updatePushNotificationToken: token updated")
+        } catch (error: Throwable) {
+            println("$TAG - updatePushNotificationToken error: ${error.message}")
+            throw error
+        }
+    }
+
+    /**
+     * Check if a push notification should be displayed by Zendesk.
+     * Returns the responsibility indicating how to handle the notification.
+     */
+    fun shouldBeDisplayed(messageData: Map<String, String>): String {
+        return try {
+            val responsibility = PushNotifications.shouldBeDisplayed(messageData)
+            val result = when (responsibility) {
+                PushResponsibility.MESSAGING_SHOULD_DISPLAY -> "messaging_should_display"
+                PushResponsibility.MESSAGING_SHOULD_NOT_DISPLAY -> "messaging_should_not_display"
+                PushResponsibility.NOT_FROM_MESSAGING -> "not_from_messaging"
+                else -> "unknown"
+            }
+            println("$TAG - shouldBeDisplayed: $result")
+            result
+        } catch (error: Throwable) {
+            println("$TAG - shouldBeDisplayed error: ${error.message}")
+            "unknown"
+        }
+    }
+
+    /**
+     * Handle and display a push notification.
+     * Returns true if the notification was handled by Zendesk.
+     */
+    fun handleNotification(context: Context, messageData: Map<String, String>): Boolean {
+        return try {
+            val responsibility = PushNotifications.shouldBeDisplayed(messageData)
+            if (responsibility == PushResponsibility.MESSAGING_SHOULD_DISPLAY) {
+                PushNotifications.displayNotification(context, messageData)
+                println("$TAG - handleNotification: notification displayed")
+                true
+            } else {
+                println("$TAG - handleNotification: not a Zendesk notification")
+                false
+            }
+        } catch (error: Throwable) {
+            println("$TAG - handleNotification error: ${error.message}")
+            false
+        }
+    }
+
+    /**
+     * Handle a notification tap event.
+     * Opens the messaging UI to the relevant conversation.
+     */
+    fun handleNotificationTap(context: Context, messageData: Map<String, String>) {
+        try {
+            val responsibility = PushNotifications.shouldBeDisplayed(messageData)
+            if (responsibility == PushResponsibility.MESSAGING_SHOULD_DISPLAY) {
+                // Show messaging UI - the SDK will navigate to the correct conversation
+                Zendesk.instance.messaging.showMessaging(
+                    plugin.activity!!,
+                    MessagingScreen.MostRecentActiveConversation()
+                )
+                println("$TAG - handleNotificationTap: opened messaging")
+            } else {
+                println("$TAG - handleNotificationTap: not a Zendesk notification")
+            }
+        } catch (error: Throwable) {
+            println("$TAG - handleNotificationTap error: ${error.message}")
+            throw error
+        }
     }
 }

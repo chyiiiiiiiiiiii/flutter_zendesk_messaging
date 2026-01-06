@@ -187,6 +187,56 @@ public class SwiftZendeskMessagingPlugin: NSObject, FlutterPlugin {
             zendeskMessaging?.invalidate()
             result(nil)
 
+        // ================================================================
+        // Push Notifications
+        // ================================================================
+
+        case "updatePushNotificationToken":
+            if !isInitialized {
+                print("\(TAG) - Messaging needs to be initialized first.\n")
+                reportNotInitializedFlutterError(result: result)
+                return
+            }
+            guard let token = arguments?["token"] as? String, !token.isEmpty else {
+                result(FlutterError(code: "invalid_argument", message: "token is required", details: nil))
+                return
+            }
+            zendeskMessaging?.updatePushNotificationTokenString(token)
+            result(nil)
+
+        case "shouldBeDisplayed":
+            guard let messageData = arguments?["messageData"] as? [String: Any] else {
+                result(FlutterError(code: "invalid_argument", message: "messageData is required", details: nil))
+                return
+            }
+            let responsibility = zendeskMessaging?.shouldBeDisplayed(messageData) ?? "unknown"
+            result(responsibility)
+
+        case "handleNotification":
+            guard let messageData = arguments?["messageData"] as? [String: Any] else {
+                result(FlutterError(code: "invalid_argument", message: "messageData is required", details: nil))
+                return
+            }
+            let handled = zendeskMessaging?.handleNotification(messageData) ?? false
+            result(handled)
+
+        case "handleNotificationTap":
+            if !isInitialized {
+                print("\(TAG) - Messaging needs to be initialized first.\n")
+                reportNotInitializedFlutterError(result: result)
+                return
+            }
+            guard let messageData = arguments?["messageData"] as? [String: Any] else {
+                result(FlutterError(code: "invalid_argument", message: "messageData is required", details: nil))
+                return
+            }
+            zendeskMessaging?.handleNotificationTap(
+                messageData,
+                rootViewController: UIApplication.shared.delegate?.window??.rootViewController
+            ) { success in
+                result(nil)
+            }
+
         default:
             result(FlutterMethodNotImplemented)
         }

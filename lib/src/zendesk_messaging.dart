@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/services.dart';
 
 import 'enums/connection_status.dart';
+import 'enums/push_responsibility.dart';
 import 'events/event_parser.dart';
 import 'events/zendesk_event.dart';
 import 'models/zendesk_login_response.dart';
@@ -555,6 +556,173 @@ class ZendeskMessaging {
     } catch (e, stackTrace) {
       ZendeskMessagingConfig.logError(
         'getConnectionStatus failed',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      rethrow;
+    }
+  }
+
+  // ============================================================================
+  // Push Notifications
+  // ============================================================================
+
+  /// Update the push notification token with Zendesk.
+  ///
+  /// Call this method when you receive a new FCM token (Android) or
+  /// APNs device token (iOS) to enable push notifications.
+  ///
+  /// [token] The push notification token string.
+  /// - Android: FCM token from FirebaseMessaging.instance.getToken()
+  /// - iOS: APNs device token converted to string
+  ///
+  /// Throws [ArgumentError] if token is empty.
+  /// Throws [PlatformException] if the update fails.
+  ///
+  /// Example:
+  /// ```dart
+  /// // Android with firebase_messaging
+  /// final fcmToken = await FirebaseMessaging.instance.getToken();
+  /// if (fcmToken != null) {
+  ///   await ZendeskMessaging.updatePushNotificationToken(fcmToken);
+  /// }
+  ///
+  /// // Listen for token refresh
+  /// FirebaseMessaging.instance.onTokenRefresh.listen((token) {
+  ///   ZendeskMessaging.updatePushNotificationToken(token);
+  /// });
+  /// ```
+  static Future<void> updatePushNotificationToken(String token) async {
+    if (token.isEmpty) {
+      throw ArgumentError('token cannot be empty');
+    }
+
+    try {
+      await _channel.invokeMethod('updatePushNotificationToken', {
+        'token': token,
+      });
+      ZendeskMessagingConfig.log('Push notification token updated');
+    } catch (e, stackTrace) {
+      ZendeskMessagingConfig.logError(
+        'updatePushNotificationToken failed',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      rethrow;
+    }
+  }
+
+  /// Check if a push notification payload is from Zendesk.
+  ///
+  /// Use this method to determine whether an incoming push notification
+  /// should be handled by the Zendesk SDK.
+  ///
+  /// [messageData] The notification data payload.
+  ///
+  /// Returns a [ZendeskPushResponsibility] indicating how to handle the notification:
+  /// - [ZendeskPushResponsibility.messagingShouldDisplay]: Zendesk notification, SDK can display it
+  /// - [ZendeskPushResponsibility.messagingShouldNotDisplay]: Zendesk notification, but should not display
+  /// - [ZendeskPushResponsibility.notFromMessaging]: Not a Zendesk notification
+  ///
+  /// Example:
+  /// ```dart
+  /// FirebaseMessaging.onMessage.listen((message) async {
+  ///   final responsibility = await ZendeskMessaging.shouldBeDisplayed(message.data);
+  ///   switch (responsibility) {
+  ///     case ZendeskPushResponsibility.messagingShouldDisplay:
+  ///       // Let Zendesk handle it
+  ///       await ZendeskMessaging.handleNotification(message.data);
+  ///     case ZendeskPushResponsibility.notFromMessaging:
+  ///       // Handle your own notification
+  ///       showLocalNotification(message);
+  ///     default:
+  ///       break;
+  ///   }
+  /// });
+  /// ```
+  static Future<ZendeskPushResponsibility> shouldBeDisplayed(
+    Map<String, dynamic> messageData,
+  ) async {
+    try {
+      final result = await _channel.invokeMethod<String>('shouldBeDisplayed', {
+        'messageData': messageData,
+      });
+      return ZendeskPushResponsibility.fromString(result);
+    } catch (e, stackTrace) {
+      ZendeskMessagingConfig.logError(
+        'shouldBeDisplayed failed',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      rethrow;
+    }
+  }
+
+  /// Handle and display an incoming push notification.
+  ///
+  /// Call this method when you receive a push notification that should be
+  /// handled by Zendesk. The SDK will display the notification appropriately
+  /// based on the app state.
+  ///
+  /// [messageData] The notification data payload.
+  ///
+  /// Returns `true` if the notification was handled by Zendesk, `false` otherwise.
+  ///
+  /// Example:
+  /// ```dart
+  /// FirebaseMessaging.onMessage.listen((message) async {
+  ///   final handled = await ZendeskMessaging.handleNotification(message.data);
+  ///   if (!handled) {
+  ///     // Not a Zendesk notification, handle it yourself
+  ///   }
+  /// });
+  /// ```
+  static Future<bool> handleNotification(
+    Map<String, dynamic> messageData,
+  ) async {
+    try {
+      final result = await _channel.invokeMethod<bool>('handleNotification', {
+        'messageData': messageData,
+      });
+      ZendeskMessagingConfig.log('Notification handled: $result');
+      return result ?? false;
+    } catch (e, stackTrace) {
+      ZendeskMessagingConfig.logError(
+        'handleNotification failed',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      rethrow;
+    }
+  }
+
+  /// Handle a notification tap event.
+  ///
+  /// Call this method when the user taps on a Zendesk push notification
+  /// to navigate to the appropriate conversation.
+  ///
+  /// [messageData] The notification data payload.
+  ///
+  /// **Note**: On iOS, when the app is in a killed state, this may not
+  /// navigate to the conversation as the SDK is not initialized.
+  ///
+  /// Example:
+  /// ```dart
+  /// FirebaseMessaging.onMessageOpenedApp.listen((message) async {
+  ///   await ZendeskMessaging.handleNotificationTap(message.data);
+  /// });
+  /// ```
+  static Future<void> handleNotificationTap(
+    Map<String, dynamic> messageData,
+  ) async {
+    try {
+      await _channel.invokeMethod('handleNotificationTap', {
+        'messageData': messageData,
+      });
+      ZendeskMessagingConfig.log('Notification tap handled');
+    } catch (e, stackTrace) {
+      ZendeskMessagingConfig.logError(
+        'handleNotificationTap failed',
         error: e,
         stackTrace: stackTrace,
       );

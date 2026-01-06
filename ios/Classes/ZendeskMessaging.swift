@@ -1,6 +1,7 @@
 import UIKit
 import ZendeskSDKMessaging
 import ZendeskSDK
+import UserNotifications
 
 public class ZendeskMessaging: NSObject {
     private static let unreadMessages = "unread_messages"
@@ -421,5 +422,95 @@ public class ZendeskMessaging: NSObject {
     func clearConversationFields() {
         Zendesk.instance?.messaging?.clearConversationFields()
         print("\(self.TAG) - clearConversationFields")
+    }
+
+    // ============================================================================
+    // Push Notifications
+    // ============================================================================
+
+    /// Update the push notification token with Zendesk.
+    /// Call this when receiving a new APNs device token.
+    func updatePushNotificationToken(_ deviceToken: Data) {
+        PushNotifications.updatePushNotificationToken(deviceToken)
+        print("\(self.TAG) - updatePushNotificationToken: token updated")
+    }
+
+    /// Update the push notification token from a string (FCM token format).
+    /// Converts the string to Data before passing to SDK.
+    func updatePushNotificationTokenString(_ token: String) {
+        // For iOS, we typically receive Data from APNs, but if using FCM,
+        // the token comes as a string. We pass it directly to the SDK.
+        if let tokenData = token.data(using: .utf8) {
+            PushNotifications.updatePushNotificationToken(tokenData)
+            print("\(self.TAG) - updatePushNotificationTokenString: token updated")
+        } else {
+            print("\(self.TAG) - updatePushNotificationTokenString: invalid token format")
+        }
+    }
+
+    /// Check if a push notification should be displayed by Zendesk.
+    /// Returns the responsibility indicating how to handle the notification.
+    func shouldBeDisplayed(_ userInfo: [AnyHashable: Any]) -> String {
+        let responsibility = PushNotifications.shouldBeDisplayed(userInfo)
+        let result: String
+        switch responsibility {
+        case .messagingShouldDisplay:
+            result = "messaging_should_display"
+        case .messagingShouldNotDisplay:
+            result = "messaging_should_not_display"
+        case .notFromMessaging:
+            result = "not_from_messaging"
+        @unknown default:
+            result = "unknown"
+        }
+        print("\(self.TAG) - shouldBeDisplayed: \(result)")
+        return result
+    }
+
+    /// Handle and display a push notification.
+    /// Returns true if the notification was handled by Zendesk.
+    func handleNotification(_ userInfo: [AnyHashable: Any]) -> Bool {
+        let responsibility = PushNotifications.shouldBeDisplayed(userInfo)
+        if responsibility == .messagingShouldDisplay {
+            print("\(self.TAG) - handleNotification: Zendesk notification detected")
+            return true
+        } else {
+            print("\(self.TAG) - handleNotification: not a Zendesk notification")
+            return false
+        }
+    }
+
+    /// Handle a notification tap event.
+    /// Returns the view controller to display, or nil if not a Zendesk notification.
+    func handleNotificationTap(_ userInfo: [AnyHashable: Any], rootViewController: UIViewController?, completion: @escaping (Bool) -> Void) {
+        let responsibility = PushNotifications.shouldBeDisplayed(userInfo)
+        if responsibility == .messagingShouldDisplay {
+            PushNotifications.handleTap(userInfo) { [weak self] viewController in
+                guard let self = self else {
+                    completion(false)
+                    return
+                }
+                if let vc = viewController, let rootVC = rootViewController {
+                    let navController = UINavigationController(rootViewController: vc)
+                    DispatchQueue.main.async {
+                        if let presentedVC = rootVC.presentedViewController {
+                            presentedVC.dismiss(animated: true) {
+                                rootVC.present(navController, animated: true, completion: nil)
+                            }
+                        } else {
+                            rootVC.present(navController, animated: true, completion: nil)
+                        }
+                        completion(true)
+                    }
+                    print("\(self.TAG) - handleNotificationTap: opened messaging")
+                } else {
+                    print("\(self.TAG) - handleNotificationTap: viewController is nil (app may have been killed)")
+                    completion(false)
+                }
+            }
+        } else {
+            print("\(self.TAG) - handleNotificationTap: not a Zendesk notification")
+            completion(false)
+        }
     }
 }
