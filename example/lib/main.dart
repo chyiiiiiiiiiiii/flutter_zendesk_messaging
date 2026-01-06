@@ -32,10 +32,8 @@ class ZendeskMessagingDemo extends StatefulWidget {
 
 class _ZendeskMessagingDemoState extends State<ZendeskMessagingDemo> {
   // Replace with your actual channel keys
-  static const String androidChannelKey =
-      'eyJzZXR0aW5nc191cmwiOiJodHRwczovL21vbmlpdC56ZW5kZXNrLmNvbS9tb2JpbGVfc2RrX2FwaS9zZXR0aW5ncy8wMUtFOEszWjdNMlcxMjIxR0IwODBTV0QyWi5qc29uIn0=';
-  static const String iosChannelKey =
-      'eyJzZXR0aW5nc191cmwiOiJodHRwczovL21vbmlpdC56ZW5kZXNrLmNvbS9tb2JpbGVfc2RrX2FwaS9zZXR0aW5ncy8wMUtFOEsyMjZXMFJZRU1ESEpIWllHOTBFWi5qc29uIn0=';
+  static const String androidChannelKey = '<YOUR_ANDROID_CHANNEL_KEY>';
+  static const String iosChannelKey = '<YOUR_IOS_CHANNEL_KEY>';
 
   final List<String> _logs = [];
   StreamSubscription<ZendeskEvent>? _eventSubscription;
@@ -197,7 +195,7 @@ class _ZendeskMessagingDemoState extends State<ZendeskMessagingDemo> {
     _log('Logging in...');
     try {
       // Replace with your actual JWT token
-      final response = await ZendeskMessaging.loginUser(jwt: 'your_jwt_token');
+      final response = await ZendeskMessaging.loginUser(jwt: '<YOUR_JWT_TOKEN>');
       setState(() {
         _isLoggedIn = true;
         _currentUser = ZendeskUser(
