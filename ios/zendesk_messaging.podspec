@@ -4,7 +4,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'zendesk_messaging'
-  s.version          = '3.0.0'
+  s.version          = '3.1.0'
   s.summary          = 'Zendesk Messaging SDK Flutter Plugin'
   s.description      = <<-DESC
 Flutter plugin for Zendesk Messaging SDK. Enables in-app customer support messaging.

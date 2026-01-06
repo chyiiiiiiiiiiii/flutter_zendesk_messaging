@@ -1,3 +1,20 @@
+## 3.1.0
+
+### New Features
+
+- **Push Notifications Support**
+  - `updatePushNotificationToken(token)` - Register FCM/APNs token with Zendesk
+  - `shouldBeDisplayed(data)` - Check if notification is from Zendesk messaging
+  - `handleNotification(data)` - Display Zendesk push notification
+  - `handleNotificationTap(data)` - Handle notification tap and navigate to conversation
+  - `ZendeskPushResponsibility` enum - Notification classification (messagingShouldDisplay, messagingShouldNotDisplay, notFromMessaging)
+
+### Implementation Details
+
+- Android: Uses official `PushNotifications` class from Zendesk SDK
+- iOS: Uses official `PushNotifications` class with `handleTap` completion handler
+- Follows official Zendesk SDK documentation patterns
+
 ## 3.0.0
 
 ### Breaking Changes
