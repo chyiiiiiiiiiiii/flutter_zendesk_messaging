@@ -16,6 +16,7 @@ A Flutter plugin for integrating Zendesk Messaging SDK into your mobile applicat
 - Unread message count tracking
 - Conversation tags and custom fields
 - Connection status monitoring
+- Push notifications support (FCM/APNs)
 
 ## Requirements
 
@@ -229,6 +230,100 @@ final status = await ZendeskMessaging.getConnectionStatus();
 // Returns: connected, connecting, disconnected, or unknown
 ```
 
+## Push Notifications
+
+Enable push notifications to notify users of new messages when the app is in the background or closed.
+
+### Requirements
+
+| Platform | Requirement |
+|----------|-------------|
+| Android | Firebase Cloud Messaging (FCM) setup |
+| iOS | APNs certificate uploaded to Zendesk Admin Center |
+| Both | Real device (simulators don't support push) |
+
+### Setup
+
+#### Android
+
+1. Add Firebase to your Android app ([Firebase setup guide](https://firebase.google.com/docs/android/setup))
+2. Add `firebase_messaging` to your `pubspec.yaml`:
+   ```yaml
+   dependencies:
+     firebase_messaging: ^15.0.0
+   ```
+3. Get your FCM Server Key from Firebase Console
+4. Upload the key to Zendesk Admin Center > Channels > Messaging > Android > Notifications
+
+#### iOS
+
+1. Create an APNs certificate in Apple Developer Portal
+2. Export as `.p12` file from Keychain Access
+3. Upload to Zendesk Admin Center > Channels > Messaging > iOS > Notifications
+4. Add Push Notifications capability in Xcode
+
+### Usage
+
+```dart
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:zendesk_messaging/zendesk_messaging.dart';
+
+Future<void> setupPushNotifications() async {
+  final messaging = FirebaseMessaging.instance;
+
+  // Request permission
+  await messaging.requestPermission();
+
+  // Get and register token
+  final token = await messaging.getToken();
+  if (token != null) {
+    await ZendeskMessaging.updatePushNotificationToken(token);
+  }
+
+  // Listen for token refresh
+  messaging.onTokenRefresh.listen((token) {
+    ZendeskMessaging.updatePushNotificationToken(token);
+  });
+
+  // Handle foreground notifications
+  FirebaseMessaging.onMessage.listen((message) async {
+    final responsibility = await ZendeskMessaging.shouldBeDisplayed(message.data);
+    switch (responsibility) {
+      case ZendeskPushResponsibility.messagingShouldDisplay:
+        await ZendeskMessaging.handleNotification(message.data);
+      case ZendeskPushResponsibility.notFromMessaging:
+        // Handle your own notification
+        break;
+      default:
+        break;
+    }
+  });
+
+  // Handle notification tap (app in background)
+  FirebaseMessaging.onMessageOpenedApp.listen((message) async {
+    await ZendeskMessaging.handleNotificationTap(message.data);
+  });
+}
+```
+
+### Push Notification API
+
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `updatePushNotificationToken(token)` | `Future<void>` | Register FCM/APNs token with Zendesk |
+| `shouldBeDisplayed(data)` | `Future<ZendeskPushResponsibility>` | Check if notification is from Zendesk |
+| `handleNotification(data)` | `Future<bool>` | Display the notification |
+| `handleNotificationTap(data)` | `Future<void>` | Handle notification tap |
+
+### ZendeskPushResponsibility
+
+| Value | Description |
+|-------|-------------|
+| `messagingShouldDisplay` | Zendesk notification, SDK can display it |
+| `messagingShouldNotDisplay` | Zendesk notification, but should not display (e.g., user is viewing the conversation) |
+| `notFromMessaging` | Not a Zendesk notification, handle it yourself |
+| `unknown` | Unable to determine |
+
 ## SDK Lifecycle
 
 ```dart
@@ -265,6 +360,10 @@ await ZendeskMessaging.invalidate();
 | `setConversationFields(fields)` | `Future<void>` | Set custom fields |
 | `clearConversationFields()` | `Future<void>` | Clear custom fields |
 | `getConnectionStatus()` | `Future<ZendeskConnectionStatus>` | Get connection status |
+| `updatePushNotificationToken(token)` | `Future<void>` | Register push token |
+| `shouldBeDisplayed(data)` | `Future<ZendeskPushResponsibility>` | Check notification source |
+| `handleNotification(data)` | `Future<bool>` | Handle push notification |
+| `handleNotificationTap(data)` | `Future<void>` | Handle notification tap |
 
 ### Streams
 
@@ -313,6 +412,12 @@ class ZendeskMessage {
 - `connected`
 - `connecting`
 - `disconnected`
+- `unknown`
+
+**ZendeskPushResponsibility**
+- `messagingShouldDisplay`
+- `messagingShouldNotDisplay`
+- `notFromMessaging`
 - `unknown`
 
 ## Migration from 2.x
