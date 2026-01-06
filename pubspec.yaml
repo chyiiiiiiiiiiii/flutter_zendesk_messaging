@@ -1,13 +1,17 @@
 name: zendesk_messaging
-description: Zendesk-Messaging for Flutter developer
-version: 2.9.3
+description: >-
+  Flutter plugin for Zendesk Messaging SDK. Provides in-app customer support
+  messaging with multi-conversation support, real-time events, and JWT authentication.
+version: 3.0.0
 homepage: https://github.com/chyiiiiiiiiiiii/flutter_zendesk_messaging
+repository: https://github.com/chyiiiiiiiiiiii/flutter_zendesk_messaging
+issue_tracker: https://github.com/chyiiiiiiiiiiii/flutter_zendesk_messaging/issues
 
 topics:
   - zendesk
-  - custom
+  - messaging
   - support
-  - help
+  - customer-service
   - chat
 
 screenshots:
@@ -15,8 +19,8 @@ screenshots:
     path: Messaging.png
 
 environment:
-  sdk: ^3.0.0
-  flutter: ">=3.10.0"
+  sdk: ^3.6.0
+  flutter: ">=3.24.0"
 
 dependencies:
   flutter:
