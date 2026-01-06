@@ -1,3 +1,69 @@
+## 3.0.0
+
+### Breaking Changes
+
+- **iOS minimum version**: 12.0 -> 14.0
+- **Dart SDK**: ^3.0.0 -> ^3.6.0
+- **Flutter SDK**: >=3.10.0 -> >=3.24.0
+
+### Native SDK Updates
+
+- Android SDK: 2.26.0 -> 2.36.1
+- iOS SDK: 2.24.0 -> 2.36.0
+- Kotlin: 1.9.24 -> 2.1.21
+- Swift: 5.9
+
+### New Features
+
+- **Full Event System**: 24 event types via sealed class pattern
+  - `UnreadMessageCountChanged` - unread count changes with conversation details
+  - `AuthenticationFailed` - auth errors with JWT expiration detection
+  - `ConnectionStatusChanged` - network state monitoring
+  - `ConversationAdded`, `ConversationStarted`, `ConversationOpened` - conversation lifecycle
+  - `MessagesShown` - messages rendered with message data
+  - `SendMessageFailed` - message send failures
+  - `FieldValidationFailed` - conversation field validation errors
+  - `MessagingOpened`, `MessagingClosed` - UI lifecycle
+  - `ProactiveMessageDisplayed`, `ProactiveMessageClicked` - proactive messaging
+  - `ConversationWithAgentRequested`, `ConversationWithAgentAssigned`, `ConversationServedByAgent` - agent events
+  - `NewConversationButtonClicked`, `PostbackButtonClicked` - UI interactions
+  - `ArticleClicked`, `ArticleBrowserClicked` - article events
+  - `ConversationExtensionOpened`, `ConversationExtensionDisplayed` - extension events
+  - `NotificationDisplayed`, `NotificationOpened` - push notification events (Android)
+
+- **Multi-Conversation Navigation**
+  - `showConversation(conversationId)` - navigate to specific conversation
+  - `showConversationList()` - display conversation list
+  - `startNewConversation()` - start new conversation directly
+  - `getUnreadMessageCountForConversation(conversationId)` - per-conversation count
+
+- **User Management**
+  - `getCurrentUser()` - get current user with auth type
+  - `ZendeskUser` model with id, externalId, authenticationType
+  - `ZendeskAuthenticationType` enum (anonymous, jwt)
+
+- **Connection Status**
+  - `getConnectionStatus()` - get SDK connection state
+  - `ZendeskConnectionStatus` enum (connected, connecting, disconnected, unknown)
+
+- **New Models**
+  - `ZendeskUser` - user information
+  - `ZendeskMessage` - message data with id, conversationId, authorId, content, timestamp
+  - `ZendeskLoginResponse` - login response data
+  - `ZendeskEvent` sealed class hierarchy
+
+### Improvements
+
+- Modern Dart 3.x syntax with sealed classes and pattern matching
+- Comprehensive API documentation
+- Unit tests for method channels and event parsing
+- Enhanced example app with all features demonstrated
+- Backwards compatible `unreadMessagesCountStream` for legacy code
+
+### Migration Guide
+
+See README.md for detailed migration instructions from 2.x.
+
 ## 2.9.3
 
 * Update Dart SDK minimum version to 3.0.0 .
