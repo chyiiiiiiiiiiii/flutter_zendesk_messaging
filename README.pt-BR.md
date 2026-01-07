@@ -37,7 +37,7 @@ Adicione `zendesk_messaging` ao seu `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  zendesk_messaging: ^3.1.0
+  zendesk_messaging: <latest_version>
 ```
 
 ### Configuração do Android

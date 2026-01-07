@@ -37,7 +37,7 @@ Flutter 插件，用于将 Zendesk Messaging SDK 集成到您的移动应用程�
 
 ```yaml
 dependencies:
-  zendesk_messaging: ^3.1.0
+  zendesk_messaging: <latest_version>
 ```
 
 ### Android 配置

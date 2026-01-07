@@ -37,7 +37,7 @@ Zendesk 메시징 SDK를 모바일 애플리케이션에 통합하기 위한 Flu
 
 ```yaml
 dependencies:
-  zendesk_messaging: ^3.1.0
+  zendesk_messaging: <latest_version>
 ```
 
 ### Android 설정
