@@ -33,7 +33,7 @@ Add `zendesk_messaging` to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  zendesk_messaging: ^3.0.0
+  zendesk_messaging: ^3.1.0
 ```
 
 ### Android Setup
@@ -85,8 +85,8 @@ import 'package:zendesk_messaging/zendesk_messaging.dart';
 
 // Initialize the SDK (call once at app startup)
 await ZendeskMessaging.initialize(
-  androidChannelKey: 'your_android_channel_key',
-  iosChannelKey: 'your_ios_channel_key',
+  androidChannelKey: '<YOUR_ANDROID_CHANNEL_KEY>',
+  iosChannelKey: '<YOUR_IOS_CHANNEL_KEY>',
 );
 ```
 
@@ -111,7 +111,7 @@ await ZendeskMessaging.startNewConversation();
 ```dart
 // Login with JWT
 try {
-  final response = await ZendeskMessaging.loginUser(jwt: 'your_jwt_token');
+  final response = await ZendeskMessaging.loginUser(jwt: '<YOUR_JWT_TOKEN>');
   print('Logged in: ${response.id}');
 } catch (e) {
   print('Login failed: $e');
@@ -122,6 +122,11 @@ final isLoggedIn = await ZendeskMessaging.isLoggedIn();
 
 // Get current user
 final user = await ZendeskMessaging.getCurrentUser();
+if (user != null) {
+  print('User ID: ${user.id}');
+  print('External ID: ${user.externalId}');
+  print('Auth type: ${user.authenticationType.name}');
+}
 
 // Logout
 await ZendeskMessaging.logoutUser();
@@ -135,9 +140,10 @@ The SDK provides a unified event stream for all Zendesk events. Use Dart 3 patte
 ZendeskMessaging.eventStream.listen((event) {
   switch (event) {
     case UnreadMessageCountChanged(:final totalUnreadCount, :final conversationId):
-      print('Unread: $totalUnreadCount');
+      print('Unread: $totalUnreadCount${conversationId != null ? ' (conversation: $conversationId)' : ''}');
 
     case AuthenticationFailed(:final errorMessage, :final isJwtExpired):
+      print('Auth failed: $errorMessage (JWT expired: $isJwtExpired)');
       if (isJwtExpired) {
         // Refresh JWT token
       }
@@ -146,13 +152,67 @@ ZendeskMessaging.eventStream.listen((event) {
       print('Connection: ${status.name}');
 
     case ConversationAdded(:final conversationId):
-      print('New conversation: $conversationId');
+      print('Conversation added: $conversationId');
 
-    case MessagesShown(:final messages):
-      print('${messages.length} messages shown');
+    case ConversationStarted(:final conversationId):
+      print('Conversation started: $conversationId');
 
-    default:
-      break;
+    case ConversationOpened(:final conversationId):
+      print('Conversation opened: ${conversationId ?? 'default'}');
+
+    case MessagesShown(:final conversationId, :final messages):
+      print('Messages shown: ${messages.length} in $conversationId');
+
+    case SendMessageFailed(:final errorMessage):
+      print('Send failed: $errorMessage');
+
+    case FieldValidationFailed(:final errors):
+      print('Field validation failed: ${errors.join(', ')}');
+
+    case MessagingOpened():
+      print('Messaging UI opened');
+
+    case MessagingClosed():
+      print('Messaging UI closed');
+
+    case ProactiveMessageDisplayed(:final proactiveMessageId):
+      print('Proactive message displayed: $proactiveMessageId');
+
+    case ProactiveMessageClicked(:final proactiveMessageId):
+      print('Proactive message clicked: $proactiveMessageId');
+
+    case ConversationWithAgentRequested(:final conversationId):
+      print('Agent requested: $conversationId');
+
+    case ConversationWithAgentAssigned(:final conversationId):
+      print('Agent assigned: $conversationId');
+
+    case ConversationServedByAgent(:final conversationId, :final agentId):
+      print('Agent serving: $agentId in $conversationId');
+
+    case NewConversationButtonClicked():
+      print('New conversation button clicked');
+
+    case PostbackButtonClicked(:final actionName):
+      print('Postback clicked: $actionName');
+
+    case ArticleClicked(:final articleUrl):
+      print('Article clicked: $articleUrl');
+
+    case ArticleBrowserClicked(:final articleUrl):
+      print('Article opened in browser: $articleUrl');
+
+    case ConversationExtensionOpened(:final extensionUrl):
+      print('Extension opened: $extensionUrl');
+
+    case ConversationExtensionDisplayed(:final extensionUrl):
+      print('Extension displayed: $extensionUrl');
+
+    case NotificationDisplayed(:final conversationId):
+      print('Notification displayed: $conversationId');
+
+    case NotificationOpened(:final conversationId):
+      print('Notification opened: $conversationId');
   }
 });
 
@@ -208,7 +268,7 @@ ZendeskMessaging.unreadMessagesCountStream.listen((count) {
 
 ```dart
 // Set tags (applied when user sends a message)
-await ZendeskMessaging.setConversationTags(['vip', 'mobile']);
+await ZendeskMessaging.setConversationTags(['vip', 'mobile', 'flutter']);
 
 // Clear tags
 await ZendeskMessaging.clearConversationTags();
@@ -216,6 +276,7 @@ await ZendeskMessaging.clearConversationTags();
 // Set custom fields
 await ZendeskMessaging.setConversationFields({
   'app_version': '3.0.0',
+  'platform': 'flutter',
   'user_tier': 'premium',
 });
 
@@ -227,7 +288,15 @@ await ZendeskMessaging.clearConversationFields();
 
 ```dart
 final status = await ZendeskMessaging.getConnectionStatus();
-// Returns: connected, connecting, disconnected, or unknown
+
+// Handle different connection states
+final color = switch (status) {
+  ZendeskConnectionStatus.connected ||
+  ZendeskConnectionStatus.connectedRealtime => Colors.green,
+  ZendeskConnectionStatus.connectingRealtime => Colors.orange,
+  ZendeskConnectionStatus.disconnected => Colors.red,
+  ZendeskConnectionStatus.unknown => Colors.grey,
+};
 ```
 
 ## Push Notifications
@@ -410,7 +479,8 @@ class ZendeskMessage {
 
 **ZendeskConnectionStatus**
 - `connected`
-- `connecting`
+- `connectedRealtime`
+- `connectingRealtime`
 - `disconnected`
 - `unknown`
 
@@ -491,6 +561,7 @@ await ZendeskMessaging.listenUnreadMessages();
 
 | Plugin | Android SDK | iOS SDK |
 |--------|-------------|---------|
+| 3.1.0 | 2.36.1 | 2.36.0 |
 | 3.0.0 | 2.36.1 | 2.36.0 |
 | 2.9.x | 2.26.0 | 2.24.0 |
 
