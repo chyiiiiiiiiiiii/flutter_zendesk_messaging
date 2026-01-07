@@ -26,3 +26,5 @@ build/
 
 .fvm/
 .vscode/
+# Test coverage
+coverage/
