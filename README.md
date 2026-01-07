@@ -7,6 +7,8 @@
 
 ![Zendesk Messaging](Messaging.png)
 
+English | [繁體中文](README.zh-TW.md)
+
 A Flutter plugin for integrating Zendesk Messaging SDK into your mobile applications. Provides in-app customer support messaging with multi-conversation support, real-time events, and JWT authentication.
 
 ## Features

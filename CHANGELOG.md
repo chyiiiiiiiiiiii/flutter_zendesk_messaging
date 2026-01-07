@@ -1,3 +1,15 @@
+## 3.2.0
+
+### Breaking Changes
+
+- **Flutter SDK**: >=3.24.0 -> >=3.27.0
+
+### Improvements
+
+- Add GitHub Actions CI workflow with automated testing
+- Expand unit test coverage for plugin APIs
+- Update README documentation
+
 ## 3.1.0
 
 ### New Features
