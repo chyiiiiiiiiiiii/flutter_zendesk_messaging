@@ -102,7 +102,7 @@ Both `unreadMessagesCountStream` (legacy) and `eventStream` (new) are maintained
 | iOS | 14.0 |
 | Android | API 21 (minSdk) |
 | Dart | 3.6.0 |
-| Flutter | 3.24.0 |
+| Flutter | 3.27.0 |
 
 ## Android Configuration
 
