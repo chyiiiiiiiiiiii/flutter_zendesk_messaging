@@ -5,9 +5,9 @@
 [![coverage](https://img.shields.io/badge/coverage-83%25-brightgreen)](https://github.com/chyiiiiiiiiiiii/flutter_zendesk_messaging)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-![Zendesk Messaging](Messaging.png)
+![Zendesk Messaging](https://raw.githubusercontent.com/chyiiiiiiiiiiii/flutter_zendesk_messaging/master/Messaging.png)
 
-English | [繁體中文](README.zh-TW.md)
+English | [繁體中文](README.zh-TW.md) | [简体中文](README.zh-CN.md) | [Español](README.es.md) | [Português (Brasil)](README.pt-BR.md) | [日本語](README.ja.md) | [한국어](README.ko.md)
 
 A Flutter plugin for integrating Zendesk Messaging SDK into your mobile applications. Provides in-app customer support messaging with multi-conversation support, real-time events, and JWT authentication.
 

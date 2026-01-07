@@ -1,3 +1,16 @@
+## 3.2.1
+
+### Documentation
+
+- Add multi-language README support
+  - 繁體中文 (Traditional Chinese)
+  - 简体中文 (Simplified Chinese)
+  - Español (Spanish)
+  - Português (Brasil) (Portuguese)
+  - 日本語 (Japanese)
+  - 한국어 (Korean)
+- Fix image URL for pub.dev compatibility (use absolute GitHub raw URL)
+
 ## 3.2.0
 
 ### Breaking Changes

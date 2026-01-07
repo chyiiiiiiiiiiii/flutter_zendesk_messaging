@@ -5,9 +5,9 @@
 [![coverage](https://img.shields.io/badge/coverage-83%25-brightgreen)](https://github.com/chyiiiiiiiiiiii/flutter_zendesk_messaging)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-![Zendesk Messaging](Messaging.png)
+![Zendesk Messaging](https://raw.githubusercontent.com/chyiiiiiiiiiiii/flutter_zendesk_messaging/master/Messaging.png)
 
-[English](README.md) | 繁體中文
+[English](README.md) | 繁體中文 | [简体中文](README.zh-CN.md) | [Español](README.es.md) | [Português (Brasil)](README.pt-BR.md) | [日本語](README.ja.md) | [한국어](README.ko.md)
 
 Flutter 套件，用於將 Zendesk Messaging SDK 整合至您的行動應用程式。提供應用程式內客服訊息功能，支援多對話、即時事件與 JWT 身份驗證。
 
