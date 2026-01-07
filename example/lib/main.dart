@@ -195,7 +195,8 @@ class _ZendeskMessagingDemoState extends State<ZendeskMessagingDemo> {
     _log('Logging in...');
     try {
       // Replace with your actual JWT token
-      final response = await ZendeskMessaging.loginUser(jwt: '<YOUR_JWT_TOKEN>');
+      final response =
+          await ZendeskMessaging.loginUser(jwt: '<YOUR_JWT_TOKEN>');
       setState(() {
         _isLoggedIn = true;
         _currentUser = ZendeskUser(
@@ -229,7 +230,7 @@ class _ZendeskMessagingDemoState extends State<ZendeskMessagingDemo> {
     try {
       final user = await ZendeskMessaging.getCurrentUser();
       setState(() => _currentUser = user);
-      if (user != null) {
+      if (user case final user?) {
         _log('Current user: ${user.id} (${user.authenticationType.name})');
       } else {
         _log('No user logged in');
