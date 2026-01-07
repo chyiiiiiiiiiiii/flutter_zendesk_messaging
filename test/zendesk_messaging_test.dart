@@ -246,6 +246,235 @@ void main() {
     });
   });
 
+  group('Push Notifications', () {
+    test('updatePushNotificationToken sends token', () async {
+      await ZendeskMessaging.updatePushNotificationToken('test_fcm_token_123');
+
+      expect(log, hasLength(1));
+      expect(log.first.method, 'updatePushNotificationToken');
+      expect(log.first.arguments['token'], 'test_fcm_token_123');
+    });
+
+    test('updatePushNotificationToken throws ArgumentError for empty token',
+        () async {
+      expect(
+        () => ZendeskMessaging.updatePushNotificationToken(''),
+        throwsArgumentError,
+      );
+    });
+
+    test('shouldBeDisplayed returns correct responsibility', () async {
+      final responsibility = await ZendeskMessaging.shouldBeDisplayed({
+        'zendesk_sdk_request_id': 'request_123',
+        'conversation_id': 'conv_456',
+      });
+
+      expect(log, hasLength(1));
+      expect(log.first.method, 'shouldBeDisplayed');
+      expect(log.first.arguments['messageData'], isA<Map>());
+      expect(responsibility, ZendeskPushResponsibility.messagingShouldDisplay);
+    });
+
+    test('shouldBeDisplayed handles notFromMessaging', () async {
+      // Override handler for this specific test
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
+        log.add(methodCall);
+        if (methodCall.method == 'shouldBeDisplayed') {
+          return 'notFromMessaging';
+        }
+        return _handleMockMethodCall(methodCall);
+      });
+
+      final responsibility = await ZendeskMessaging.shouldBeDisplayed({
+        'other_key': 'value',
+      });
+
+      expect(responsibility, ZendeskPushResponsibility.notFromMessaging);
+    });
+
+    test('handleNotification returns true when handled', () async {
+      final handled = await ZendeskMessaging.handleNotification({
+        'zendesk_sdk_request_id': 'request_123',
+        'conversation_id': 'conv_456',
+      });
+
+      expect(log, hasLength(1));
+      expect(log.first.method, 'handleNotification');
+      expect(log.first.arguments['messageData'], isA<Map>());
+      expect(handled, isTrue);
+    });
+
+    test('handleNotification returns false when not handled', () async {
+      // Override handler for this specific test
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
+        log.add(methodCall);
+        if (methodCall.method == 'handleNotification') {
+          return false;
+        }
+        return _handleMockMethodCall(methodCall);
+      });
+
+      final handled = await ZendeskMessaging.handleNotification({
+        'other_key': 'value',
+      });
+
+      expect(handled, isFalse);
+    });
+
+    test('handleNotificationTap calls native method', () async {
+      await ZendeskMessaging.handleNotificationTap({
+        'zendesk_sdk_request_id': 'request_123',
+        'conversation_id': 'conv_456',
+      });
+
+      expect(log, hasLength(1));
+      expect(log.first.method, 'handleNotificationTap');
+      expect(log.first.arguments['messageData'], isA<Map>());
+    });
+  });
+
+  group('Authentication Edge Cases', () {
+    test('getCurrentUser returns null when no user', () async {
+      // Override handler for this specific test
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
+        log.add(methodCall);
+        if (methodCall.method == 'getCurrentUser') {
+          return null;
+        }
+        return _handleMockMethodCall(methodCall);
+      });
+
+      final user = await ZendeskMessaging.getCurrentUser();
+
+      expect(log, hasLength(1));
+      expect(log.first.method, 'getCurrentUser');
+      expect(user, isNull);
+    });
+
+    test('isInitialized returns false when not initialized', () async {
+      // Override handler for this specific test
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
+        log.add(methodCall);
+        if (methodCall.method == 'isInitialized') {
+          return false;
+        }
+        return _handleMockMethodCall(methodCall);
+      });
+
+      final result = await ZendeskMessaging.isInitialized();
+
+      expect(result, isFalse);
+    });
+
+    test('isLoggedIn returns false when not logged in', () async {
+      // Override handler for this specific test
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
+        log.add(methodCall);
+        if (methodCall.method == 'isLoggedIn') {
+          return false;
+        }
+        return _handleMockMethodCall(methodCall);
+      });
+
+      final result = await ZendeskMessaging.isLoggedIn();
+
+      expect(result, isFalse);
+    });
+
+    test('loginUser handles null response', () async {
+      // Override handler for this specific test
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
+        log.add(methodCall);
+        if (methodCall.method == 'loginUser') {
+          return null;
+        }
+        return _handleMockMethodCall(methodCall);
+      });
+
+      final response = await ZendeskMessaging.loginUser(jwt: 'test_jwt');
+
+      expect(response, isA<ZendeskLoginResponse>());
+      expect(response.id, isNull);
+      expect(response.externalId, isNull);
+    });
+  });
+
+  group('Message Count Edge Cases', () {
+    test('getUnreadMessageCount returns 0 when null', () async {
+      // Override handler for this specific test
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
+        log.add(methodCall);
+        if (methodCall.method == 'getUnreadMessageCount') {
+          return null;
+        }
+        return _handleMockMethodCall(methodCall);
+      });
+
+      final count = await ZendeskMessaging.getUnreadMessageCount();
+
+      expect(count, 0);
+    });
+
+    test('getUnreadMessageCountForConversation returns 0 when null', () async {
+      // Override handler for this specific test
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
+        log.add(methodCall);
+        if (methodCall.method == 'getUnreadMessageCountForConversation') {
+          return null;
+        }
+        return _handleMockMethodCall(methodCall);
+      });
+
+      final count = await ZendeskMessaging.getUnreadMessageCountForConversation(
+        'conv_123',
+      );
+
+      expect(count, 0);
+    });
+  });
+
+  group('Connection Status Edge Cases', () {
+    test('getConnectionStatus handles unknown status', () async {
+      // Override handler for this specific test
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
+        log.add(methodCall);
+        if (methodCall.method == 'getConnectionStatus') {
+          return 'unknown_status';
+        }
+        return _handleMockMethodCall(methodCall);
+      });
+
+      final status = await ZendeskMessaging.getConnectionStatus();
+
+      expect(status, ZendeskConnectionStatus.unknown);
+    });
+
+    test('getConnectionStatus handles null status', () async {
+      // Override handler for this specific test
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
+        log.add(methodCall);
+        if (methodCall.method == 'getConnectionStatus') {
+          return null;
+        }
+        return _handleMockMethodCall(methodCall);
+      });
+
+      final status = await ZendeskMessaging.getConnectionStatus();
+
+      expect(status, ZendeskConnectionStatus.unknown);
+    });
+  });
+
   group('ZendeskMessagingConfig', () {
     test('logging can be enabled and disabled', () {
       ZendeskMessagingConfig.enableLogging = true;
@@ -265,6 +494,50 @@ void main() {
       ZendeskMessagingConfig.log('test message');
 
       expect(logs, contains('[ZendeskMessaging] test message'));
+
+      // Cleanup
+      ZendeskMessagingConfig.logger = null;
+      ZendeskMessagingConfig.enableLogging = false;
+    });
+
+    test('log does nothing when logging is disabled', () {
+      final logs = <String>[];
+      ZendeskMessagingConfig.enableLogging = false;
+      ZendeskMessagingConfig.logger = (message, {error, stackTrace}) {
+        logs.add(message);
+      };
+
+      ZendeskMessagingConfig.log('test message');
+
+      expect(logs, isEmpty);
+
+      // Cleanup
+      ZendeskMessagingConfig.logger = null;
+    });
+
+    test('logError includes error details', () {
+      final logs = <String>[];
+      Object? capturedError;
+      StackTrace? capturedStackTrace;
+
+      ZendeskMessagingConfig.enableLogging = true;
+      ZendeskMessagingConfig.logger = (message, {error, stackTrace}) {
+        logs.add(message);
+        capturedError = error;
+        capturedStackTrace = stackTrace;
+      };
+
+      final testError = Exception('Test error');
+      final testStackTrace = StackTrace.current;
+      ZendeskMessagingConfig.logError(
+        'error occurred',
+        error: testError,
+        stackTrace: testStackTrace,
+      );
+
+      expect(logs, contains('[ZendeskMessaging] error occurred'));
+      expect(capturedError, testError);
+      expect(capturedStackTrace, testStackTrace);
 
       // Cleanup
       ZendeskMessagingConfig.logger = null;
@@ -320,6 +593,14 @@ dynamic _handleMockMethodCall(MethodCall methodCall) {
     case 'setConversationFields':
       return null;
     case 'clearConversationFields':
+      return null;
+    case 'updatePushNotificationToken':
+      return null;
+    case 'shouldBeDisplayed':
+      return 'messagingShouldDisplay';
+    case 'handleNotification':
+      return true;
+    case 'handleNotificationTap':
       return null;
     default:
       return null;

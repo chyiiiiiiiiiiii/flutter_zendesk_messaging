@@ -622,5 +622,439 @@ void main() {
 
       expect(response1, equals(response2));
     });
+
+    test('hashCode is consistent', () {
+      const response1 = ZendeskLoginResponse(
+        id: 'user_123',
+        externalId: 'ext_456',
+      );
+      const response2 = ZendeskLoginResponse(
+        id: 'user_123',
+        externalId: 'ext_456',
+      );
+
+      expect(response1.hashCode, equals(response2.hashCode));
+    });
+
+    test('toString returns readable format', () {
+      const response = ZendeskLoginResponse(
+        id: 'user_123',
+        externalId: 'ext_456',
+      );
+
+      expect(response.toString(), contains('user_123'));
+      expect(response.toString(), contains('ext_456'));
+    });
+  });
+
+  group('ZendeskPushResponsibility', () {
+    test('messagingShouldDisplay parses correctly', () {
+      expect(
+        ZendeskPushResponsibility.fromString('messagingShouldDisplay'),
+        ZendeskPushResponsibility.messagingShouldDisplay,
+      );
+    });
+
+    test('messagingShouldDisplay with underscore parses correctly', () {
+      expect(
+        ZendeskPushResponsibility.fromString('messaging_should_display'),
+        ZendeskPushResponsibility.messagingShouldDisplay,
+      );
+    });
+
+    test('messagingShouldNotDisplay parses correctly', () {
+      expect(
+        ZendeskPushResponsibility.fromString('messagingShouldNotDisplay'),
+        ZendeskPushResponsibility.messagingShouldNotDisplay,
+      );
+    });
+
+    test('messagingShouldNotDisplay with underscore parses correctly', () {
+      expect(
+        ZendeskPushResponsibility.fromString('messaging_should_not_display'),
+        ZendeskPushResponsibility.messagingShouldNotDisplay,
+      );
+    });
+
+    test('notFromMessaging parses correctly', () {
+      expect(
+        ZendeskPushResponsibility.fromString('notFromMessaging'),
+        ZendeskPushResponsibility.notFromMessaging,
+      );
+    });
+
+    test('notFromMessaging with underscore parses correctly', () {
+      expect(
+        ZendeskPushResponsibility.fromString('not_from_messaging'),
+        ZendeskPushResponsibility.notFromMessaging,
+      );
+    });
+
+    test('unknown string returns unknown', () {
+      expect(
+        ZendeskPushResponsibility.fromString('invalid'),
+        ZendeskPushResponsibility.unknown,
+      );
+    });
+
+    test('null string returns unknown', () {
+      expect(
+        ZendeskPushResponsibility.fromString(null),
+        ZendeskPushResponsibility.unknown,
+      );
+    });
+  });
+
+  group('ZendeskUser additional tests', () {
+    test('hashCode is consistent', () {
+      const user1 = ZendeskUser(
+        id: 'user_123',
+        externalId: 'ext_456',
+        authenticationType: ZendeskAuthenticationType.jwt,
+      );
+      const user2 = ZendeskUser(
+        id: 'user_123',
+        externalId: 'ext_456',
+        authenticationType: ZendeskAuthenticationType.jwt,
+      );
+
+      expect(user1.hashCode, equals(user2.hashCode));
+    });
+
+    test('toString returns readable format', () {
+      const user = ZendeskUser(
+        id: 'user_123',
+        externalId: 'ext_456',
+        authenticationType: ZendeskAuthenticationType.jwt,
+      );
+
+      expect(user.toString(), contains('user_123'));
+      expect(user.toString(), contains('ext_456'));
+      expect(user.toString(), contains('jwt'));
+    });
+
+    test('fromMap handles missing fields', () {
+      final user = ZendeskUser.fromMap({});
+
+      expect(user.id, isNull);
+      expect(user.externalId, isNull);
+      expect(user.authenticationType, ZendeskAuthenticationType.anonymous);
+    });
+  });
+
+  group('ZendeskMessage additional tests', () {
+    test('hashCode is consistent', () {
+      final timestamp = DateTime.fromMillisecondsSinceEpoch(1704067200000);
+      final message1 = ZendeskMessage(
+        id: 'msg_123',
+        conversationId: 'conv_456',
+        authorId: 'author_789',
+        content: 'Hello',
+        timestamp: timestamp,
+      );
+      final message2 = ZendeskMessage(
+        id: 'msg_123',
+        conversationId: 'conv_456',
+        authorId: 'author_789',
+        content: 'Hello',
+        timestamp: timestamp,
+      );
+
+      expect(message1.hashCode, equals(message2.hashCode));
+    });
+
+    test('equality works correctly', () {
+      final timestamp = DateTime.fromMillisecondsSinceEpoch(1704067200000);
+      final message1 = ZendeskMessage(
+        id: 'msg_123',
+        conversationId: 'conv_456',
+        authorId: 'author_789',
+        content: 'Hello',
+        timestamp: timestamp,
+      );
+      final message2 = ZendeskMessage(
+        id: 'msg_123',
+        conversationId: 'conv_456',
+        authorId: 'author_789',
+        content: 'Hello',
+        timestamp: timestamp,
+      );
+      final message3 = ZendeskMessage(
+        id: 'different',
+        conversationId: 'conv_456',
+        authorId: 'author_789',
+        content: 'Hello',
+        timestamp: timestamp,
+      );
+
+      expect(message1, equals(message2));
+      expect(message1, isNot(equals(message3)));
+    });
+
+    test('toString returns readable format', () {
+      final message = ZendeskMessage(
+        id: 'msg_123',
+        conversationId: 'conv_456',
+        authorId: 'author_789',
+        content: 'Hello',
+        timestamp: DateTime.now(),
+      );
+
+      expect(message.toString(), contains('msg_123'));
+      expect(message.toString(), contains('conv_456'));
+      expect(message.toString(), contains('Hello'));
+    });
+
+    test('fromMap handles missing optional fields', () {
+      final message = ZendeskMessage.fromMap({
+        'id': 'msg_123',
+        'conversationId': 'conv_456',
+      });
+
+      expect(message.id, 'msg_123');
+      expect(message.conversationId, 'conv_456');
+      expect(message.authorId, isNull);
+      expect(message.content, isNull);
+      expect(message.timestamp, isNull);
+    });
+
+    test('fromMap handles missing required fields with defaults', () {
+      final message = ZendeskMessage.fromMap({});
+
+      expect(message.id, '');
+      expect(message.conversationId, '');
+    });
+  });
+
+  group('ZendeskEventParser edge cases', () {
+    test('parses event with non-Map data returns null', () {
+      final event = ZendeskEventParser.parse('not a map');
+
+      expect(event, isNull);
+    });
+
+    test('parses event with missing timestamp uses current time', () {
+      final data = {
+        'type': 'messagingOpened',
+        // timestamp omitted
+      };
+
+      final event = ZendeskEventParser.parse(data);
+
+      expect(event, isA<MessagingOpened>());
+      expect(event!.timestamp, isNotNull);
+      // Timestamp should be close to now
+      expect(
+        event.timestamp.difference(DateTime.now()).inSeconds.abs(),
+        lessThan(2),
+      );
+    });
+
+    test('UnreadMessageCountChanged handles missing optional fields', () {
+      final data = {
+        'type': 'unreadMessageCountChanged',
+        'timestamp': 1704067200000,
+        'totalUnreadCount': 5,
+        // conversationId and conversationUnreadCount omitted
+      };
+
+      final event = ZendeskEventParser.parse(data);
+
+      expect(event, isA<UnreadMessageCountChanged>());
+      final unreadEvent = event as UnreadMessageCountChanged;
+      expect(unreadEvent.totalUnreadCount, 5);
+      expect(unreadEvent.conversationId, isNull);
+      expect(unreadEvent.conversationUnreadCount, isNull);
+    });
+
+    test('AuthenticationFailed handles missing fields with defaults', () {
+      final data = {
+        'type': 'authenticationFailed',
+        'timestamp': 1704067200000,
+        // All optional fields omitted
+      };
+
+      final event = ZendeskEventParser.parse(data);
+
+      expect(event, isA<AuthenticationFailed>());
+      final authEvent = event as AuthenticationFailed;
+      expect(authEvent.errorCode, 'unknown');
+      expect(authEvent.errorMessage, 'Unknown error');
+      expect(authEvent.isJwtExpired, false);
+    });
+
+    test('FieldValidationFailed handles non-list errors', () {
+      final data = {
+        'type': 'fieldValidationFailed',
+        'timestamp': 1704067200000,
+        'errors': null,
+      };
+
+      final event = ZendeskEventParser.parse(data);
+
+      expect(event, isA<FieldValidationFailed>());
+      final validationEvent = event as FieldValidationFailed;
+      expect(validationEvent.errors, isEmpty);
+    });
+
+    test('MessagesShown handles empty messages list', () {
+      final data = {
+        'type': 'messagesShown',
+        'timestamp': 1704067200000,
+        'conversationId': 'conv_123',
+        'messages': [],
+      };
+
+      final event = ZendeskEventParser.parse(data);
+
+      expect(event, isA<MessagesShown>());
+      final msgEvent = event as MessagesShown;
+      expect(msgEvent.messages, isEmpty);
+    });
+
+    test('MessagesShown handles null messages', () {
+      final data = {
+        'type': 'messagesShown',
+        'timestamp': 1704067200000,
+        'conversationId': 'conv_123',
+        'messages': null,
+      };
+
+      final event = ZendeskEventParser.parse(data);
+
+      expect(event, isA<MessagesShown>());
+      final msgEvent = event as MessagesShown;
+      expect(msgEvent.messages, isEmpty);
+    });
+
+    test('SendMessageFailed handles missing conversationId', () {
+      final data = {
+        'type': 'sendMessageFailed',
+        'timestamp': 1704067200000,
+        'errorMessage': 'Failed to send',
+      };
+
+      final event = ZendeskEventParser.parse(data);
+
+      expect(event, isA<SendMessageFailed>());
+      final failEvent = event as SendMessageFailed;
+      expect(failEvent.conversationId, isNull);
+      expect(failEvent.errorMessage, 'Failed to send');
+    });
+
+    test('ConversationOpened handles null conversationId', () {
+      final data = {
+        'type': 'conversationOpened',
+        'timestamp': 1704067200000,
+        // conversationId omitted
+      };
+
+      final event = ZendeskEventParser.parse(data);
+
+      expect(event, isA<ConversationOpened>());
+      final convEvent = event as ConversationOpened;
+      expect(convEvent.conversationId, isNull);
+    });
+
+    test('ProactiveMessageDisplayed handles null campaignId', () {
+      final data = {
+        'type': 'proactiveMessageDisplayed',
+        'timestamp': 1704067200000,
+        'proactiveMessageId': 'proactive_123',
+        // campaignId omitted
+      };
+
+      final event = ZendeskEventParser.parse(data);
+
+      expect(event, isA<ProactiveMessageDisplayed>());
+      final proactiveEvent = event as ProactiveMessageDisplayed;
+      expect(proactiveEvent.proactiveMessageId, 'proactive_123');
+      expect(proactiveEvent.campaignId, isNull);
+    });
+
+    test('ArticleClicked handles null conversationId', () {
+      final data = {
+        'type': 'articleClicked',
+        'timestamp': 1704067200000,
+        'articleUrl': 'https://help.example.com/article/123',
+        // conversationId omitted
+      };
+
+      final event = ZendeskEventParser.parse(data);
+
+      expect(event, isA<ArticleClicked>());
+      final articleEvent = event as ArticleClicked;
+      expect(articleEvent.articleUrl, 'https://help.example.com/article/123');
+      expect(articleEvent.conversationId, isNull);
+    });
+
+    test('ConversationServedByAgent handles null agentId', () {
+      final data = {
+        'type': 'conversationServedByAgent',
+        'timestamp': 1704067200000,
+        'conversationId': 'conv_123',
+        // agentId omitted
+      };
+
+      final event = ZendeskEventParser.parse(data);
+
+      expect(event, isA<ConversationServedByAgent>());
+      final agentEvent = event as ConversationServedByAgent;
+      expect(agentEvent.conversationId, 'conv_123');
+      expect(agentEvent.agentId, isNull);
+    });
+  });
+
+  group('ZendeskConnectionStatus case insensitivity', () {
+    test('CONNECTED (uppercase) parses correctly', () {
+      expect(
+        ZendeskConnectionStatus.fromString('CONNECTED'),
+        ZendeskConnectionStatus.connected,
+      );
+    });
+
+    test('Connected (mixed case) parses correctly', () {
+      expect(
+        ZendeskConnectionStatus.fromString('Connected'),
+        ZendeskConnectionStatus.connected,
+      );
+    });
+
+    test('DISCONNECTED (uppercase) parses correctly', () {
+      expect(
+        ZendeskConnectionStatus.fromString('DISCONNECTED'),
+        ZendeskConnectionStatus.disconnected,
+      );
+    });
+
+    test('RECONNECTING (uppercase) parses correctly', () {
+      expect(
+        ZendeskConnectionStatus.fromString('RECONNECTING'),
+        ZendeskConnectionStatus.connectingRealtime,
+      );
+    });
+  });
+
+  group('ZendeskAuthenticationType case insensitivity', () {
+    test('JWT (uppercase) parses correctly', () {
+      expect(
+        ZendeskAuthenticationType.fromString('JWT'),
+        ZendeskAuthenticationType.jwt,
+      );
+    });
+
+    test('Jwt (mixed case) parses correctly', () {
+      expect(
+        ZendeskAuthenticationType.fromString('Jwt'),
+        ZendeskAuthenticationType.jwt,
+      );
+    });
+
+    test('ANONYMOUS (uppercase) parses correctly', () {
+      expect(
+        ZendeskAuthenticationType.fromString('ANONYMOUS'),
+        ZendeskAuthenticationType.anonymous,
+      );
+    });
   });
 }
