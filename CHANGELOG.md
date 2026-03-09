@@ -1,5 +1,9 @@
 ## 3.2.1
 
+### Bug Fixes
+
+- **iOS**: Resolve root view controller from active scene for UISceneDelegate apps (#94)
+
 ### Documentation
 
 - Add multi-language README support
