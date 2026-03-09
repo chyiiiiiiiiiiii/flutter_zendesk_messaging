@@ -1,8 +1,10 @@
-## 3.2.1
+## 3.2.2
 
 ### Bug Fixes
 
 - **iOS**: Resolve root view controller from active scene for UISceneDelegate apps (#94)
+
+## 3.2.1
 
 ### Documentation
 
