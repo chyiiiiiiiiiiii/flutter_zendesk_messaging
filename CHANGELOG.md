@@ -1,3 +1,10 @@
+## 3.2.3
+
+### Bug Fixes
+
+- **iOS**: Fix push notification token conversion — correctly hex-decode APNs device token string to raw bytes instead of UTF-8 encoding (#95)
+- **Docs**: Clarify that iOS requires APNs device token (via `getAPNSToken()`), not FCM registration token
+
 ## 3.2.2
 
 ### Bug Fixes

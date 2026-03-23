@@ -435,17 +435,34 @@ public class ZendeskMessaging: NSObject {
         print("\(self.TAG) - updatePushNotificationToken: token updated")
     }
 
-    /// Update the push notification token from a string (FCM token format).
-    /// Converts the string to Data before passing to SDK.
+    /// Update the push notification token from a hex string.
+    /// The Zendesk iOS SDK requires raw APNs device token Data.
+    /// This method converts the hex string representation back to raw bytes.
     func updatePushNotificationTokenString(_ token: String) {
-        // For iOS, we typically receive Data from APNs, but if using FCM,
-        // the token comes as a string. We pass it directly to the SDK.
-        if let tokenData = token.data(using: .utf8) {
-            PushNotifications.updatePushNotificationToken(tokenData)
-            print("\(self.TAG) - updatePushNotificationTokenString: token updated")
-        } else {
-            print("\(self.TAG) - updatePushNotificationTokenString: invalid token format")
+        let hexString = token
+            .replacingOccurrences(of: "<", with: "")
+            .replacingOccurrences(of: ">", with: "")
+            .replacingOccurrences(of: " ", with: "")
+
+        guard hexString.count % 2 == 0 else {
+            print("\(self.TAG) - updatePushNotificationTokenString: invalid hex token (odd length)")
+            return
         }
+
+        var data = Data()
+        var index = hexString.startIndex
+        while index < hexString.endIndex {
+            let nextIndex = hexString.index(index, offsetBy: 2)
+            guard let byte = UInt8(hexString[index..<nextIndex], radix: 16) else {
+                print("\(self.TAG) - updatePushNotificationTokenString: invalid hex character in token")
+                return
+            }
+            data.append(byte)
+            index = nextIndex
+        }
+
+        PushNotifications.updatePushNotificationToken(data)
+        print("\(self.TAG) - updatePushNotificationTokenString: token updated (\(data.count) bytes)")
     }
 
     /// Check if a push notification should be displayed by Zendesk.
