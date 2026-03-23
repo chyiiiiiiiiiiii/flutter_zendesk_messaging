@@ -349,19 +349,16 @@ Future<void> setupPushNotifications() async {
   await messaging.requestPermission();
 
   // Get and register the correct token per platform
-  // - Android: FCM token
-  // - iOS: APNs device token (Zendesk iOS SDK requires APNs, not FCM)
-  String? token;
-  if (Platform.isAndroid) {
-    token = await messaging.getToken();
-  } else if (Platform.isIOS) {
-    token = await messaging.getAPNSToken();
-  }
-  if (token != null) {
-    await ZendeskMessaging.updatePushNotificationToken(token);
-  }
+  // - Android: FCM token via getToken()
+  // - iOS: APNs device token via getAPNSToken()
+  //   (Zendesk iOS SDK requires APNs token, NOT the FCM token)
+  await _registerPushToken(messaging);
 
-  // Listen for token refresh (Android only — APNs tokens rarely change)
+  // Listen for token refresh
+  // - Android: onTokenRefresh returns new FCM tokens
+  // - iOS: APNs tokens rarely change (device restore, OS update);
+  //   re-fetch via getAPNSToken() on each app launch (done above).
+  //   onTokenRefresh returns FCM tokens which are NOT usable here.
   if (Platform.isAndroid) {
     messaging.onTokenRefresh.listen((token) {
       ZendeskMessaging.updatePushNotificationToken(token);
@@ -387,9 +384,21 @@ Future<void> setupPushNotifications() async {
     await ZendeskMessaging.handleNotificationTap(message.data);
   });
 }
+
+Future<void> _registerPushToken(FirebaseMessaging messaging) async {
+  String? token;
+  if (Platform.isAndroid) {
+    token = await messaging.getToken();
+  } else if (Platform.isIOS) {
+    token = await messaging.getAPNSToken();
+  }
+  if (token != null) {
+    await ZendeskMessaging.updatePushNotificationToken(token);
+  }
+}
 ```
 
-> **Important (iOS):** The Zendesk iOS SDK uses APNs directly for push notifications, not FCM. You must pass the APNs device token via `getAPNSToken()`, not the FCM registration token from `getToken()`. Using the wrong token type will silently fail to deliver notifications.
+> **Important (iOS):** The Zendesk iOS SDK uses APNs directly for push notifications, not FCM. You must pass the APNs device token via `getAPNSToken()`, not the FCM registration token from `getToken()`. Using the wrong token type will silently fail to deliver notifications. APNs tokens rarely change, but calling `getAPNSToken()` on each app launch ensures the token stays current.
 
 ### Push Notification API
 
