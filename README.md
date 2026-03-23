@@ -338,6 +338,7 @@ Enable push notifications to notify users of new messages when the app is in the
 ### Usage
 
 ```dart
+import 'dart:io' show Platform;
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:zendesk_messaging/zendesk_messaging.dart';
 
@@ -347,16 +348,25 @@ Future<void> setupPushNotifications() async {
   // Request permission
   await messaging.requestPermission();
 
-  // Get and register token
-  final token = await messaging.getToken();
+  // Get and register the correct token per platform
+  // - Android: FCM token
+  // - iOS: APNs device token (Zendesk iOS SDK requires APNs, not FCM)
+  String? token;
+  if (Platform.isAndroid) {
+    token = await messaging.getToken();
+  } else if (Platform.isIOS) {
+    token = await messaging.getAPNSToken();
+  }
   if (token != null) {
     await ZendeskMessaging.updatePushNotificationToken(token);
   }
 
-  // Listen for token refresh
-  messaging.onTokenRefresh.listen((token) {
-    ZendeskMessaging.updatePushNotificationToken(token);
-  });
+  // Listen for token refresh (Android only — APNs tokens rarely change)
+  if (Platform.isAndroid) {
+    messaging.onTokenRefresh.listen((token) {
+      ZendeskMessaging.updatePushNotificationToken(token);
+    });
+  }
 
   // Handle foreground notifications
   FirebaseMessaging.onMessage.listen((message) async {
@@ -378,6 +388,8 @@ Future<void> setupPushNotifications() async {
   });
 }
 ```
+
+> **Important (iOS):** The Zendesk iOS SDK uses APNs directly for push notifications, not FCM. You must pass the APNs device token via `getAPNSToken()`, not the FCM registration token from `getToken()`. Using the wrong token type will silently fail to deliver notifications.
 
 ### Push Notification API
 

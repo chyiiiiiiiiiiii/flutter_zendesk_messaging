@@ -569,28 +569,40 @@ class ZendeskMessaging {
 
   /// Update the push notification token with Zendesk.
   ///
-  /// Call this method when you receive a new FCM token (Android) or
-  /// APNs device token (iOS) to enable push notifications.
+  /// Call this method when you receive a new push notification token
+  /// to enable push notifications.
   ///
   /// [token] The push notification token string.
-  /// - Android: FCM token from FirebaseMessaging.instance.getToken()
-  /// - iOS: APNs device token converted to string
+  /// - Android: FCM token from `FirebaseMessaging.instance.getToken()`
+  /// - iOS: **APNs device token** (hex string) from
+  ///   `FirebaseMessaging.instance.getAPNSToken()`. The Zendesk iOS SDK
+  ///   requires the native APNs token, not the FCM token.
+  ///
+  /// **Important (iOS):** You must pass the APNs device token, not the FCM
+  /// registration token. FCM tokens are not compatible with the Zendesk iOS
+  /// SDK's push notification system. Use `getAPNSToken()` instead of
+  /// `getToken()` on iOS.
   ///
   /// Throws [ArgumentError] if token is empty.
   /// Throws [PlatformException] if the update fails.
   ///
   /// Example:
   /// ```dart
-  /// // Android with firebase_messaging
-  /// final fcmToken = await FirebaseMessaging.instance.getToken();
-  /// if (fcmToken != null) {
-  ///   await ZendeskMessaging.updatePushNotificationToken(fcmToken);
-  /// }
+  /// import 'dart:io' show Platform;
   ///
-  /// // Listen for token refresh
-  /// FirebaseMessaging.instance.onTokenRefresh.listen((token) {
-  ///   ZendeskMessaging.updatePushNotificationToken(token);
-  /// });
+  /// // Get the correct token per platform
+  /// final messaging = FirebaseMessaging.instance;
+  /// String? token;
+  /// if (Platform.isAndroid) {
+  ///   token = await messaging.getToken();
+  /// } else if (Platform.isIOS) {
+  ///   // iOS requires the APNs token, not the FCM token
+  ///   final apnsToken = await messaging.getAPNSToken();
+  ///   token = apnsToken;
+  /// }
+  /// if (token != null) {
+  ///   await ZendeskMessaging.updatePushNotificationToken(token);
+  /// }
   /// ```
   static Future<void> updatePushNotificationToken(String token) async {
     if (token.isEmpty) {
