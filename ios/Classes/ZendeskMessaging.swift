@@ -425,6 +425,16 @@ public class ZendeskMessaging: NSObject {
     }
 
     // ============================================================================
+    // Locale
+    // ============================================================================
+
+    func setLocale(locale: String) {
+        UserDefaults.standard.set([locale], forKey: "AppleLanguages")
+        UserDefaults.standard.synchronize()
+        print("\(self.TAG) - setLocale: \(locale)")
+    }
+
+    // ============================================================================
     // Push Notifications
     // ============================================================================
 

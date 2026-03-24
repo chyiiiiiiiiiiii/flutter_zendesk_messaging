@@ -490,6 +490,23 @@ class ZendeskMessaging(
     }
 
     // ============================================================================
+    // Locale
+    // ============================================================================
+
+    fun setLocale(locale: String) {
+        val parsedLocale = java.util.Locale.forLanguageTag(locale)
+        java.util.Locale.setDefault(parsedLocale)
+
+        plugin.activity?.let { activity ->
+            val config = android.content.res.Configuration(activity.resources.configuration)
+            config.setLocale(parsedLocale)
+            @Suppress("DEPRECATION")
+            activity.resources.updateConfiguration(config, activity.resources.displayMetrics)
+        }
+        println("$TAG - setLocale: $locale")
+    }
+
+    // ============================================================================
     // Push Notifications
     // ============================================================================
 

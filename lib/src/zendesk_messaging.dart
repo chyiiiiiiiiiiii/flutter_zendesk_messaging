@@ -564,6 +564,61 @@ class ZendeskMessaging {
   }
 
   // ============================================================================
+  // Locale
+  // ============================================================================
+
+  /// Set the locale for the Zendesk Messaging UI.
+  ///
+  /// Overrides the device's system locale so the Zendesk chat UI
+  /// matches the app's current language setting.
+  ///
+  /// [locale] A BCP 47 language tag (e.g. `'en'`, `'es'`, `'zh-TW'`).
+  ///
+  /// **How it works:**
+  /// - **Android**: Sets `Locale.setDefault()` and updates the activity's
+  ///   resource configuration. The Zendesk SDK picks up UI strings from
+  ///   Android's resource system.
+  /// - **iOS**: Sets the `AppleLanguages` user default. For best results,
+  ///   call this before [initialize] or re-initialize the SDK afterwards.
+  ///
+  /// **Note:** Call this method before [show] or [initialize] for the
+  /// locale change to take full effect. On iOS, a re-initialization
+  /// may be needed for the change to apply.
+  ///
+  /// Throws [ArgumentError] if locale is empty.
+  /// Throws [PlatformException] if the SDK has not been initialized.
+  ///
+  /// Example:
+  /// ```dart
+  /// // Set locale before showing messaging UI
+  /// await ZendeskMessaging.setLocale('es');
+  /// await ZendeskMessaging.show();
+  ///
+  /// // Or use Flutter's Localizations
+  /// final locale = Localizations.localeOf(context);
+  /// await ZendeskMessaging.setLocale(locale.toLanguageTag());
+  /// ```
+  static Future<void> setLocale(String locale) async {
+    if (locale.isEmpty) {
+      throw ArgumentError('locale cannot be empty');
+    }
+
+    try {
+      await _channel.invokeMethod('setLocale', {
+        'locale': locale,
+      });
+      ZendeskMessagingConfig.log('Locale set to: $locale');
+    } catch (e, stackTrace) {
+      ZendeskMessagingConfig.logError(
+        'setLocale failed',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      rethrow;
+    }
+  }
+
+  // ============================================================================
   // Push Notifications
   // ============================================================================
 

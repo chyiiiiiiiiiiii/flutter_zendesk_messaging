@@ -20,6 +20,7 @@ A Flutter plugin for integrating Zendesk Messaging SDK into your mobile applicat
 - Unread message count tracking
 - Conversation tags and custom fields
 - Connection status monitoring
+- Runtime locale override for messaging UI
 - Push notifications support (FCM/APNs)
 
 ## Requirements
@@ -303,6 +304,24 @@ final color = switch (status) {
 };
 ```
 
+## Locale
+
+Override the device's system locale so the Zendesk messaging UI matches your app's language:
+
+```dart
+// Set locale before showing messaging UI
+await ZendeskMessaging.setLocale('es');
+await ZendeskMessaging.show();
+
+// Or use Flutter's Localizations
+final locale = Localizations.localeOf(context);
+await ZendeskMessaging.setLocale(locale.toLanguageTag());
+```
+
+**Platform details:**
+- **Android**: Sets the default locale and updates the activity's resource configuration. Takes effect immediately for subsequent `show()` calls.
+- **iOS**: Sets the `AppleLanguages` user default. For best results, call before `initialize()` or re-initialize the SDK after changing the locale.
+
 ## Push Notifications
 
 Enable push notifications to notify users of new messages when the app is in the background or closed.
@@ -433,6 +452,7 @@ await ZendeskMessaging.invalidate();
 | `setConversationFields(fields)` | `Future<void>` | Set custom fields |
 | `clearConversationFields()` | `Future<void>` | Clear custom fields |
 | `getConnectionStatus()` | `Future<ZendeskConnectionStatus>` | Get connection status |
+| `setLocale(locale)` | `Future<void>` | Set messaging UI locale |
 | `updatePushNotificationToken(token)` | `Future<void>` | Register push token |
 | `shouldBeDisplayed(data)` | `Future<ZendeskPushResponsibility>` | Check notification source |
 | `handleNotification(data)` | `Future<bool>` | Handle push notification |

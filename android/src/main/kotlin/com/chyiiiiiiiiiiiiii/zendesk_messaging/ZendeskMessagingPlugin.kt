@@ -238,6 +238,30 @@ class ZendeskMessagingPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
             }
 
             // ================================================================
+            // Locale
+            // ================================================================
+
+            "setLocale" -> {
+                if (!isInitialized) {
+                    println("$tag - Zendesk SDK needs to be initialized first")
+                    reportNotInitializedFlutterError(result)
+                    return
+                }
+                val locale = call.argument<String>("locale")
+                if (locale.isNullOrEmpty()) {
+                    result.error("invalid_argument", "locale is required", null)
+                    return
+                }
+                try {
+                    zendeskMessaging.setLocale(locale)
+                    result.success(null)
+                } catch (err: Throwable) {
+                    println("$tag - setLocale error: ${err.message}")
+                    result.error("set_locale_error", err.message, null)
+                }
+            }
+
+            // ================================================================
             // Push Notifications
             // ================================================================
 

@@ -1,3 +1,11 @@
+## 3.3.0
+
+### New Features
+
+- **Locale**: Add `setLocale(locale)` to override the Zendesk messaging UI language at runtime (#97)
+  - Android: Sets `Locale.setDefault()` and updates activity resource configuration
+  - iOS: Sets `AppleLanguages` user default for SDK localization
+
 ## 3.2.2
 
 ### Bug Fixes
