@@ -306,21 +306,32 @@ final color = switch (status) {
 
 ## Locale
 
-Override the device's system locale so the Zendesk messaging UI matches your app's language:
+Override the device's system locale so the Zendesk messaging UI matches your app's language. The Zendesk SDK ships with [33 languages](https://developer.zendesk.com/documentation/zendesk-web-widget-sdks/sdks/android/localization/).
 
 ```dart
-// Set locale before showing messaging UI
+// Best: set locale before initialization
 await ZendeskMessaging.setLocale('es');
+await ZendeskMessaging.initialize(
+  androidChannelKey: '<YOUR_ANDROID_CHANNEL_KEY>',
+  iosChannelKey: '<YOUR_IOS_CHANNEL_KEY>',
+);
+
+// Android: can also switch at runtime before show()
+await ZendeskMessaging.setLocale('ja');
 await ZendeskMessaging.show();
 
-// Or use Flutter's Localizations
-final locale = Localizations.localeOf(context);
-await ZendeskMessaging.setLocale(locale.toLanguageTag());
+// iOS runtime switch: requires re-initialization
+await ZendeskMessaging.setLocale('fr');
+await ZendeskMessaging.invalidate();
+await ZendeskMessaging.initialize(
+  androidChannelKey: '<YOUR_ANDROID_CHANNEL_KEY>',
+  iosChannelKey: '<YOUR_IOS_CHANNEL_KEY>',
+);
 ```
 
 **Platform details:**
-- **Android**: Sets the default locale and updates the activity's resource configuration. Takes effect immediately for subsequent `show()` calls.
-- **iOS**: Sets the `AppleLanguages` user default. For best results, call before `initialize()` or re-initialize the SDK after changing the locale.
+- **Android**: Sets `Locale.setDefault()` and updates application/activity resource configuration. The SDK resolves UI strings from Android's resource system, so this takes effect when the SDK launches its messaging Activity. Can switch at runtime.
+- **iOS**: Sets the `AppleLanguages` user default, which controls which localization bundle the SDK loads. Must be set **before** `initialize()`. To change after initialization, call `invalidate()` then `initialize()` again.
 
 ## Push Notifications
 

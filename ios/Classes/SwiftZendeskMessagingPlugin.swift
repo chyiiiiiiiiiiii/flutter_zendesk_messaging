@@ -192,11 +192,8 @@ public class SwiftZendeskMessagingPlugin: NSObject, FlutterPlugin {
         // ================================================================
 
         case "setLocale":
-            if !isInitialized {
-                print("\(TAG) - Messaging needs to be initialized first.\n")
-                reportNotInitializedFlutterError(result: result)
-                return
-            }
+            // No isInitialized check — on iOS, setLocale should be called
+            // BEFORE initialize() for the locale to take full effect.
             guard let locale = arguments?["locale"] as? String, !locale.isEmpty else {
                 result(FlutterError(code: "invalid_argument", message: "locale is required", details: nil))
                 return

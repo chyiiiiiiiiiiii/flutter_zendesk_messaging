@@ -242,11 +242,8 @@ class ZendeskMessagingPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
             // ================================================================
 
             "setLocale" -> {
-                if (!isInitialized) {
-                    println("$tag - Zendesk SDK needs to be initialized first")
-                    reportNotInitializedFlutterError(result)
-                    return
-                }
+                // No isInitialized check — setLocale can be called before
+                // initialize() to set the locale for the SDK at startup.
                 val locale = call.argument<String>("locale")
                 if (locale.isNullOrEmpty()) {
                     result.error("invalid_argument", "locale is required", null)

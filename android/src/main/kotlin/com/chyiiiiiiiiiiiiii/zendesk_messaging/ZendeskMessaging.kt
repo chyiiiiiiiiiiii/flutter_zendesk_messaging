@@ -497,6 +497,16 @@ class ZendeskMessaging(
         val parsedLocale = java.util.Locale.forLanguageTag(locale)
         java.util.Locale.setDefault(parsedLocale)
 
+        // Update application context so new Activities launched by the SDK
+        // inherit the correct locale for resource resolution
+        plugin.activity?.applicationContext?.let { appContext ->
+            val appConfig = android.content.res.Configuration(appContext.resources.configuration)
+            appConfig.setLocale(parsedLocale)
+            @Suppress("DEPRECATION")
+            appContext.resources.updateConfiguration(appConfig, appContext.resources.displayMetrics)
+        }
+
+        // Update current activity context for immediate effect
         plugin.activity?.let { activity ->
             val config = android.content.res.Configuration(activity.resources.configuration)
             config.setLocale(parsedLocale)
