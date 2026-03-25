@@ -246,6 +246,31 @@ void main() {
     });
   });
 
+  group('Locale', () {
+    test('setLocale sends locale string', () async {
+      await ZendeskMessaging.setLocale('es');
+
+      expect(log, hasLength(1));
+      expect(log.first.method, 'setLocale');
+      expect(log.first.arguments['locale'], 'es');
+    });
+
+    test('setLocale sends BCP 47 language tag', () async {
+      await ZendeskMessaging.setLocale('zh-TW');
+
+      expect(log, hasLength(1));
+      expect(log.first.method, 'setLocale');
+      expect(log.first.arguments['locale'], 'zh-TW');
+    });
+
+    test('setLocale throws ArgumentError for empty locale', () async {
+      expect(
+        () => ZendeskMessaging.setLocale(''),
+        throwsArgumentError,
+      );
+    });
+  });
+
   group('Push Notifications', () {
     test('updatePushNotificationToken sends token', () async {
       await ZendeskMessaging.updatePushNotificationToken('test_fcm_token_123');
@@ -593,6 +618,8 @@ dynamic _handleMockMethodCall(MethodCall methodCall) {
     case 'setConversationFields':
       return null;
     case 'clearConversationFields':
+      return null;
+    case 'setLocale':
       return null;
     case 'updatePushNotificationToken':
       return null;

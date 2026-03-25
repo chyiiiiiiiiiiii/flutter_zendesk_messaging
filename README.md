@@ -20,6 +20,7 @@ A Flutter plugin for integrating Zendesk Messaging SDK into your mobile applicat
 - Unread message count tracking
 - Conversation tags and custom fields
 - Connection status monitoring
+- Runtime locale override for messaging UI
 - Push notifications support (FCM/APNs)
 
 ## Requirements
@@ -303,6 +304,35 @@ final color = switch (status) {
 };
 ```
 
+## Locale
+
+Override the device's system locale so the Zendesk messaging UI matches your app's language. The Zendesk SDK ships with [33 languages](https://developer.zendesk.com/documentation/zendesk-web-widget-sdks/sdks/android/localization/).
+
+```dart
+// Best: set locale before initialization
+await ZendeskMessaging.setLocale('es');
+await ZendeskMessaging.initialize(
+  androidChannelKey: '<YOUR_ANDROID_CHANNEL_KEY>',
+  iosChannelKey: '<YOUR_IOS_CHANNEL_KEY>',
+);
+
+// Android: can also switch at runtime before show()
+await ZendeskMessaging.setLocale('ja');
+await ZendeskMessaging.show();
+
+// iOS runtime switch: requires re-initialization
+await ZendeskMessaging.setLocale('fr');
+await ZendeskMessaging.invalidate();
+await ZendeskMessaging.initialize(
+  androidChannelKey: '<YOUR_ANDROID_CHANNEL_KEY>',
+  iosChannelKey: '<YOUR_IOS_CHANNEL_KEY>',
+);
+```
+
+**Platform details:**
+- **Android**: Sets `Locale.setDefault()` and updates application/activity resource configuration. The SDK resolves UI strings from Android's resource system, so this takes effect when the SDK launches its messaging Activity. Can switch at runtime.
+- **iOS**: Sets the `AppleLanguages` user default, which controls which localization bundle the SDK loads. Must be set **before** `initialize()`. To change after initialization, call `invalidate()` then `initialize()` again.
+
 ## Push Notifications
 
 Enable push notifications to notify users of new messages when the app is in the background or closed.
@@ -433,6 +463,7 @@ await ZendeskMessaging.invalidate();
 | `setConversationFields(fields)` | `Future<void>` | Set custom fields |
 | `clearConversationFields()` | `Future<void>` | Clear custom fields |
 | `getConnectionStatus()` | `Future<ZendeskConnectionStatus>` | Get connection status |
+| `setLocale(locale)` | `Future<void>` | Set messaging UI locale |
 | `updatePushNotificationToken(token)` | `Future<void>` | Register push token |
 | `shouldBeDisplayed(data)` | `Future<ZendeskPushResponsibility>` | Check notification source |
 | `handleNotification(data)` | `Future<bool>` | Handle push notification |

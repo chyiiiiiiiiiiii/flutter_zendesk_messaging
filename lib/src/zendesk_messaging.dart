@@ -564,6 +564,78 @@ class ZendeskMessaging {
   }
 
   // ============================================================================
+  // Locale
+  // ============================================================================
+
+  /// Set the locale for the Zendesk Messaging UI.
+  ///
+  /// Overrides the device's system locale so the Zendesk chat UI
+  /// matches the app's current language setting.
+  ///
+  /// [locale] A BCP 47 language tag (e.g. `'en'`, `'es'`, `'zh-TW'`).
+  ///
+  /// Can be called before or after [initialize]. For the most reliable
+  /// behavior, call this **before** [initialize].
+  ///
+  /// **How it works:**
+  /// - **Android**: Sets `Locale.setDefault()` and updates both the
+  ///   application and activity resource configurations. The Zendesk SDK
+  ///   resolves UI strings from Android's resource system, so this takes
+  ///   effect when the SDK launches its messaging Activity.
+  /// - **iOS**: Sets the `AppleLanguages` user default, which controls
+  ///   which `.lproj` bundle the SDK loads localized strings from.
+  ///   This must be set **before** the SDK loads its bundle. If the
+  ///   SDK is already initialized, call [invalidate] then [initialize]
+  ///   again for the change to take effect.
+  ///
+  /// **Supported languages:** The Zendesk SDK ships with 33 languages.
+  /// See the [localization docs](https://developer.zendesk.com/documentation/zendesk-web-widget-sdks/sdks/android/localization/)
+  /// for the full list.
+  ///
+  /// Throws [ArgumentError] if locale is empty.
+  ///
+  /// Example:
+  /// ```dart
+  /// // Best: set locale before initialization
+  /// await ZendeskMessaging.setLocale('es');
+  /// await ZendeskMessaging.initialize(
+  ///   androidChannelKey: 'key',
+  ///   iosChannelKey: 'key',
+  /// );
+  ///
+  /// // Also works on Android: set locale then show
+  /// await ZendeskMessaging.setLocale('ja');
+  /// await ZendeskMessaging.show();
+  ///
+  /// // iOS runtime switch: requires re-initialization
+  /// await ZendeskMessaging.setLocale('fr');
+  /// await ZendeskMessaging.invalidate();
+  /// await ZendeskMessaging.initialize(
+  ///   androidChannelKey: 'key',
+  ///   iosChannelKey: 'key',
+  /// );
+  /// ```
+  static Future<void> setLocale(String locale) async {
+    if (locale.isEmpty) {
+      throw ArgumentError('locale cannot be empty');
+    }
+
+    try {
+      await _channel.invokeMethod('setLocale', {
+        'locale': locale,
+      });
+      ZendeskMessagingConfig.log('Locale set to: $locale');
+    } catch (e, stackTrace) {
+      ZendeskMessagingConfig.logError(
+        'setLocale failed',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      rethrow;
+    }
+  }
+
+  // ============================================================================
   // Push Notifications
   // ============================================================================
 

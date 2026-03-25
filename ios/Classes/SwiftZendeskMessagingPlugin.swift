@@ -188,6 +188,20 @@ public class SwiftZendeskMessagingPlugin: NSObject, FlutterPlugin {
             result(nil)
 
         // ================================================================
+        // Locale
+        // ================================================================
+
+        case "setLocale":
+            // No isInitialized check — on iOS, setLocale should be called
+            // BEFORE initialize() for the locale to take full effect.
+            guard let locale = arguments?["locale"] as? String, !locale.isEmpty else {
+                result(FlutterError(code: "invalid_argument", message: "locale is required", details: nil))
+                return
+            }
+            zendeskMessaging?.setLocale(locale: locale)
+            result(nil)
+
+        // ================================================================
         // Push Notifications
         // ================================================================
 
