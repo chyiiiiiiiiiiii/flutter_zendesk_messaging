@@ -1,3 +1,15 @@
+## 3.5.0
+
+### Dependencies
+
+- **iOS**: Update `ZendeskSDKMessaging` from 2.36.0 to 2.39.0 (CocoaPods and
+  Swift Package Manager). Picks up the SDK fixes for the JWT-expiration check
+  that could leave the app loading forever (2.36.1) and for client data being
+  cleared unexpectedly (2.37.0). The minimum iOS version is unchanged; 2.40.0
+  is deliberately skipped because it raises the SDK's minimum to iOS 16.
+- **Android**: Update `messaging-android` from 2.36.1 to 2.40.0. The SDK is now
+  built with Kotlin 2.2.21, so apps need Kotlin 2.1 or later.
+
 ## 3.4.0
 
 ### New Features

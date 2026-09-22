@@ -6,8 +6,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 A Flutter plugin for integrating Zendesk Messaging SDK into mobile applications. This is a federated plugin with platform-specific implementations for Android (Kotlin) and iOS (Swift).
 
-**Current Version**: 3.4.0
-**SDK Versions**: Android 2.36.1, iOS 2.36.0
+**Current Version**: 3.5.0
+**SDK Versions**: Android 2.40.0, iOS 2.39.0
 
 ## Development Commands
 
