@@ -42,7 +42,10 @@ public class ZendeskMessaging: NSObject {
 
     func invalidate() {
         Zendesk.instance?.removeEventObserver(self)
-        Zendesk.invalidate()
+        // Clear stored user data and conversations so the next user starts
+        // fresh. The no-argument overload keeps storage on iOS, while Android's
+        // invalidate() always clears it; passing true matches Android.
+        Zendesk.invalidate(true)
         self.zendeskPlugin?.isInitialized = false
         self.zendeskPlugin?.isLoggedIn = false
         print("\(self.TAG) - invalidate")

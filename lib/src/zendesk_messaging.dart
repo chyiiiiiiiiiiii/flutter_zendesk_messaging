@@ -162,6 +162,10 @@ class ZendeskMessaging {
 
   /// Invalidate the current Zendesk SDK instance.
   ///
+  /// Closes connections and clears all locally stored SDK data (user state,
+  /// conversations and cache) on both Android and iOS. This does not end a
+  /// JWT user's session on the backend; call [logoutUser] first for that.
+  ///
   /// After calling this method, [initialize] must be called again before
   /// using any other ZendeskMessaging methods.
   ///

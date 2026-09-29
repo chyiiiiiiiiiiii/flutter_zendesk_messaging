@@ -458,7 +458,8 @@ Future<void> _registerPushToken(FirebaseMessaging messaging) async {
 // Check if SDK is initialized
 final isInit = await ZendeskMessaging.isInitialized();
 
-// Invalidate SDK instance (cleanup)
+// Invalidate SDK instance (cleanup). Clears all locally stored SDK data
+// (user, conversations, cache) on both Android and iOS.
 await ZendeskMessaging.invalidate();
 // After invalidate, you must call initialize() again to use the SDK
 ```
@@ -471,7 +472,7 @@ await ZendeskMessaging.invalidate();
 |--------|---------|-------------|
 | `initialize(androidChannelKey, iosChannelKey)` | `Future<void>` | Initialize the SDK |
 | `isInitialized()` | `Future<bool>` | Check if SDK is initialized |
-| `invalidate()` | `Future<void>` | Invalidate SDK instance |
+| `invalidate()` | `Future<void>` | Invalidate SDK instance and clear local SDK data |
 | `show()` | `Future<void>` | Show messaging UI |
 | `showConversation(id)` | `Future<void>` | Show specific conversation |
 | `showConversationList()` | `Future<void>` | Show conversation list |

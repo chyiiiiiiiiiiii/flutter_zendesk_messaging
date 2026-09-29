@@ -454,7 +454,8 @@ Future<void> _registerPushToken(FirebaseMessaging messaging) async {
 // 檢查 SDK 是否已初始化
 final isInit = await ZendeskMessaging.isInitialized();
 
-// 使 SDK 實例失效（清理）
+// 使 SDK 實例失效（清理）。在 Android 與 iOS 上都會清除本機儲存的所有 SDK 資料
+//（使用者、對話、快取）。
 await ZendeskMessaging.invalidate();
 // 失效後，您必須再次呼叫 initialize() 才能使用 SDK
 ```
@@ -467,7 +468,7 @@ await ZendeskMessaging.invalidate();
 |------|--------|------|
 | `initialize(androidChannelKey, iosChannelKey)` | `Future<void>` | 初始化 SDK |
 | `isInitialized()` | `Future<bool>` | 檢查 SDK 是否已初始化 |
-| `invalidate()` | `Future<void>` | 使 SDK 實例失效 |
+| `invalidate()` | `Future<void>` | 使 SDK 實例失效並清除本機 SDK 資料 |
 | `show()` | `Future<void>` | 顯示訊息 UI |
 | `showConversation(id)` | `Future<void>` | 顯示特定對話 |
 | `showConversationList()` | `Future<void>` | 顯示對話列表 |
