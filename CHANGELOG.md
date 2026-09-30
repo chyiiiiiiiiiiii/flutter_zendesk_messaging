@@ -1,3 +1,17 @@
+## Unreleased
+
+### Behavior Changes
+
+- **iOS**: `invalidate()` now clears the SDK's local storage (user data,
+  conversations and cache), matching Android. Previously the iOS SDK was
+  invalidated with `clearStorage: false`, so the previous user's data and
+  conversation history stayed on the device after `logoutUser()` +
+  `invalidate()` and could show up for the next user. Android's
+  `Zendesk.invalidate()` has no option to keep data, so behavior is now the
+  same on both platforms. Apps that relied on iOS keeping anonymous
+  conversations across `invalidate()` will now start with a new anonymous
+  user.
+
 ## 3.5.0
 
 ### Dependencies
