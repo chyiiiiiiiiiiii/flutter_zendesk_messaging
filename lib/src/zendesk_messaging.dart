@@ -580,8 +580,9 @@ class ZendeskMessaging {
   ///
   /// [locale] A BCP 47 language tag (e.g. `'en'`, `'es'`, `'zh-TW'`).
   ///
-  /// Can be called before or after [initialize]. For the most reliable
-  /// behavior, call this **before** [initialize].
+  /// Can be called before or after [initialize]. On Android, calling it
+  /// **before** [initialize] is the most reliable. On iOS, the new locale
+  /// applies from the next app launch (see below).
   ///
   /// **How it works:**
   /// - **Android**: Sets `Locale.setDefault()` and updates both the
@@ -590,9 +591,12 @@ class ZendeskMessaging {
   ///   effect when the SDK launches its messaging Activity.
   /// - **iOS**: Sets the `AppleLanguages` user default, which controls
   ///   which `.lproj` bundle the SDK loads localized strings from.
-  ///   This must be set **before** the SDK loads its bundle. If the
-  ///   SDK is already initialized, call [invalidate] then [initialize]
-  ///   again for the change to take effect.
+  ///   iOS reads this value only when the app launches, so the new
+  ///   locale applies from the **next app launch**. Calling [invalidate]
+  ///   then [initialize] does not switch it at runtime (see
+  ///   https://github.com/chyiiiiiiiiiiii/flutter_zendesk_messaging/issues/105).
+  ///   The value is saved on the device and also sets the language iOS
+  ///   uses for the host app's own localized resources.
   ///
   /// **Supported languages:** The Zendesk SDK ships with 33 languages.
   /// See the [localization docs](https://developer.zendesk.com/documentation/zendesk-web-widget-sdks/sdks/android/localization/)
@@ -613,13 +617,9 @@ class ZendeskMessaging {
   /// await ZendeskMessaging.setLocale('ja');
   /// await ZendeskMessaging.show();
   ///
-  /// // iOS runtime switch: requires re-initialization
+  /// // iOS: applies from the next app launch
   /// await ZendeskMessaging.setLocale('fr');
-  /// await ZendeskMessaging.invalidate();
-  /// await ZendeskMessaging.initialize(
-  ///   androidChannelKey: 'key',
-  ///   iosChannelKey: 'key',
-  /// );
+  /// // invalidate() + initialize() does not reload the language on iOS.
   /// ```
   static Future<void> setLocale(String locale) async {
     if (locale.isEmpty) {

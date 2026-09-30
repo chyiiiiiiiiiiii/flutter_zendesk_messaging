@@ -324,18 +324,14 @@ await ZendeskMessaging.initialize(
 await ZendeskMessaging.setLocale('ja');
 await ZendeskMessaging.show();
 
-// iOS runtime switch: requires re-initialization
+// iOS: applies from the next app launch
 await ZendeskMessaging.setLocale('fr');
-await ZendeskMessaging.invalidate();
-await ZendeskMessaging.initialize(
-  androidChannelKey: '<YOUR_ANDROID_CHANNEL_KEY>',
-  iosChannelKey: '<YOUR_IOS_CHANNEL_KEY>',
-);
+// invalidate() + initialize() does not reload the language on iOS.
 ```
 
 **Platform details:**
 - **Android**: Sets `Locale.setDefault()` and updates application/activity resource configuration. The SDK resolves UI strings from Android's resource system, so this takes effect when the SDK launches its messaging Activity. Can switch at runtime.
-- **iOS**: Sets the `AppleLanguages` user default, which controls which localization bundle the SDK loads. Must be set **before** `initialize()`. To change after initialization, call `invalidate()` then `initialize()` again.
+- **iOS**: Sets the `AppleLanguages` user default, which controls which localization bundle the SDK loads. iOS reads this value only when the app launches, so the new language applies from the **next app launch**. Calling `invalidate()` then `initialize()` does not switch it at runtime ([#105](https://github.com/chyiiiiiiiiiiii/flutter_zendesk_messaging/issues/105)). The value is saved on the device and also sets the language iOS uses for your app's own localized resources.
 
 ## Push Notifications
 
