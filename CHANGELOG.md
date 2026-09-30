@@ -1,4 +1,4 @@
-## Unreleased
+## 3.6.0
 
 ### Behavior Changes
 
@@ -10,7 +10,14 @@
   `Zendesk.invalidate()` has no option to keep data, so behavior is now the
   same on both platforms. Apps that relied on iOS keeping anonymous
   conversations across `invalidate()` will now start with a new anonymous
-  user.
+  user (#107, #108).
+
+### Documentation
+
+- **iOS**: `setLocale()` docs now say the new locale applies from the next app
+  launch. iOS reads `AppleLanguages` only at launch, so the previously
+  documented `invalidate()` + `initialize()` flow did not switch the language
+  at runtime (#105, #109).
 
 ## 3.5.0
 
