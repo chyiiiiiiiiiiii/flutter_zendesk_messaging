@@ -1,6 +1,7 @@
 package com.chyiiiiiiiiiiiiii.zendesk_messaging
 
 import android.app.Activity
+import android.app.Application
 import android.content.Context
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
@@ -26,6 +27,8 @@ class ZendeskMessagingPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
         channel.setMethodCallHandler(this)
         applicationContext = flutterPluginBinding.applicationContext
         zendeskMessaging = ZendeskMessaging(this, channel)
+        (applicationContext as? Application)
+            ?.registerActivityLifecycleCallbacks(zendeskMessaging.sdkActivityTracker)
     }
 
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
@@ -392,6 +395,8 @@ class ZendeskMessagingPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
         channel.setMethodCallHandler(null)
+        (applicationContext as? Application)
+            ?.unregisterActivityLifecycleCallbacks(zendeskMessaging.sdkActivityTracker)
     }
 
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {

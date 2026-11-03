@@ -1,7 +1,9 @@
 package com.chyiiiiiiiiiiiiii.zendesk_messaging
 
+import android.app.Activity
+import android.app.Application
 import android.content.Context
-import android.content.Intent
+import android.os.Bundle
 import android.net.Uri
 import android.os.Handler
 import android.os.Looper
@@ -29,6 +31,25 @@ class ZendeskMessaging(
         const val EVENT_UNREAD_MESSAGES = "unread_messages"
         const val EVENT_ZENDESK_EVENT = "zendesk_event"
         const val EVENT_LINK_TAPPED = "link_tapped"
+    }
+
+    // The SDK has no close call, and its chat is singleTask in a task of its own, so
+    // bringing the app's Activity to the front would leave it behind for Back to find.
+    private val sdkActivities = mutableSetOf<Activity>()
+    val sdkActivityTracker = object : Application.ActivityLifecycleCallbacks {
+        override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
+            if (activity.javaClass.name.startsWith("zendesk.")) sdkActivities.add(activity)
+        }
+
+        override fun onActivityDestroyed(activity: Activity) {
+            sdkActivities.remove(activity)
+        }
+
+        override fun onActivityStarted(activity: Activity) = Unit
+        override fun onActivityResumed(activity: Activity) = Unit
+        override fun onActivityPaused(activity: Activity) = Unit
+        override fun onActivityStopped(activity: Activity) = Unit
+        override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) = Unit
     }
 
     // Kept here because the delegate must answer synchronously, which rules out asking Dart.
@@ -531,14 +552,8 @@ class ZendeskMessaging(
     // Locale
     // ============================================================================
 
-    // The SDK has no close call. Its screens sit above the app's Activity in the
-    // same task, so bringing that Activity back to the top finishes them.
     fun closeMessaging() {
-        val activity = plugin.activity ?: return
-        activity.startActivity(
-            Intent(activity, activity.javaClass)
-                .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
-        )
+        sdkActivities.toList().forEach { it.finish() }
         println("$TAG - closeMessaging")
     }
 
