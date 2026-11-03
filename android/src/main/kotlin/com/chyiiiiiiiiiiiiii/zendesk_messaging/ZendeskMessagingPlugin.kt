@@ -262,6 +262,26 @@ class ZendeskMessagingPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
             }
 
             // ================================================================
+            // Links
+            // ================================================================
+
+            "closeMessaging" -> {
+                zendeskMessaging.closeMessaging()
+                result.success(null)
+            }
+
+            "setHandledLinkHosts" -> {
+                // No isInitialized check: the hosts are also applied after initialize.
+                val hosts = call.argument<List<String>>("hosts")
+                if (hosts == null) {
+                    result.error("invalid_argument", "hosts is required", null)
+                    return
+                }
+                zendeskMessaging.setHandledLinkHosts(hosts)
+                result.success(null)
+            }
+
+            // ================================================================
             // Push Notifications
             // ================================================================
 

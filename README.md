@@ -333,6 +333,27 @@ await ZendeskMessaging.setLocale('fr');
 - **Android**: Sets `Locale.setDefault()` and updates application/activity resource configuration. The SDK resolves UI strings from Android's resource system, so this takes effect when the SDK launches its messaging Activity. Can switch at runtime.
 - **iOS**: Sets the `AppleLanguages` user default, which controls which localization bundle the SDK loads. iOS reads this value only when the app launches, so the new language applies from the **next app launch**. Calling `invalidate()` then `initialize()` does not switch it at runtime ([#105](https://github.com/chyiiiiiiiiiiii/flutter_zendesk_messaging/issues/105)). The value is saved on the device and also sets the language iOS uses for your app's own localized resources.
 
+## Links in the Chat
+
+By default the SDK hands a tapped link to the phone. On iOS, a universal link to your own app that is opened this way goes to Safari instead of coming back to your app. To open such links yourself, list their hosts:
+
+```dart
+// Listen first: a tap with no listener opens nothing.
+ZendeskMessaging.onLinkTapped.listen((url) async {
+  // Your app now owns this link: route it, or open it in a browser.
+  // If it opens one of your screens, close the chat first.
+  await ZendeskMessaging.closeMessaging();
+});
+
+await ZendeskMessaging.setHandledLinkHosts(['app.example.com']);
+```
+
+- A link to a listed host is not opened by the SDK, and its URL arrives on `onLinkTapped`. Any other link opens as usual.
+- Hosts match exactly and ignore case: `example.com` does not cover `www.example.com`.
+- The chat stays open until you call `closeMessaging()`.
+- An empty list turns this off, and is the default.
+- On Android, `tel:` and `mailto:` links always go to the phone.
+
 ## Push Notifications
 
 Enable push notifications to notify users of new messages when the app is in the background or closed.
@@ -472,6 +493,8 @@ await ZendeskMessaging.invalidate();
 | `show()` | `Future<void>` | Show messaging UI |
 | `showConversation(id)` | `Future<void>` | Show specific conversation |
 | `showConversationList()` | `Future<void>` | Show conversation list |
+| `closeMessaging()` | `Future<void>` | Close the messaging UI |
+| `setHandledLinkHosts(hosts)` | `Future<void>` | Take over chat links to these hosts |
 | `startNewConversation()` | `Future<void>` | Start new conversation |
 | `loginUser(jwt)` | `Future<ZendeskLoginResponse>` | Login with JWT |
 | `logoutUser()` | `Future<void>` | Logout current user |
@@ -497,6 +520,7 @@ await ZendeskMessaging.invalidate();
 |--------|------|-------------|
 | `eventStream` | `Stream<ZendeskEvent>` | All Zendesk events |
 | `unreadMessagesCountStream` | `Stream<int>` | Unread count changes (legacy) |
+| `onLinkTapped` | `Stream<String>` | Tapped links whose host was passed to `setHandledLinkHosts()` |
 
 ### Models
 

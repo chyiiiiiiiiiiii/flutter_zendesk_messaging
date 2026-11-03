@@ -271,6 +271,86 @@ void main() {
     });
   });
 
+  group('Handled link hosts', () {
+    Future<void> simulateNative(String method, Object? arguments) async {
+      await TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .handlePlatformMessage(
+        'zendesk_messaging',
+        const StandardMethodCodec().encodeMethodCall(
+          MethodCall(method, arguments),
+        ),
+        (_) {},
+      );
+    }
+
+    setUp(() async {
+      // The native-to-Dart handler is registered by initialize().
+      await ZendeskMessaging.initialize(
+        androidChannelKey: 'android_key',
+        iosChannelKey: 'ios_key',
+      );
+      log.clear();
+    });
+
+    test('closeMessaging calls native', () async {
+      await ZendeskMessaging.closeMessaging();
+
+      expect(log.single.method, 'closeMessaging');
+    });
+
+    test('sends the hosts lowercased', () async {
+      await ZendeskMessaging.setHandledLinkHosts(['App.Example.COM', 'b.io']);
+
+      expect(log, hasLength(1));
+      expect(log.first.method, 'setHandledLinkHosts');
+      expect(log.first.arguments['hosts'], ['app.example.com', 'b.io']);
+    });
+
+    test('an empty list is sent so native can turn it off', () async {
+      await ZendeskMessaging.setHandledLinkHosts([]);
+
+      expect(log.single.arguments['hosts'], isEmpty);
+    });
+
+    for (final bad in [
+      '',
+      'https://example.com',
+      'example.com/path',
+      'example.com:443',
+      'user@example.com',
+    ]) {
+      test('rejects "$bad" without calling native', () async {
+        expect(
+          () => ZendeskMessaging.setHandledLinkHosts(['ok.com', bad]),
+          throwsArgumentError,
+        );
+        expect(log, isEmpty);
+      });
+    }
+
+    test('a tap from native arrives on onLinkTapped', () async {
+      final taps = <String>[];
+      final subscription = ZendeskMessaging.onLinkTapped.listen(taps.add);
+      addTearDown(subscription.cancel);
+
+      await simulateNative('link_tapped', {'url': 'https://a.io/x?y=1'});
+      await pumpEventQueue();
+
+      expect(taps, ['https://a.io/x?y=1']);
+    });
+
+    test('a tap with no url is ignored', () async {
+      final taps = <String>[];
+      final subscription = ZendeskMessaging.onLinkTapped.listen(taps.add);
+      addTearDown(subscription.cancel);
+
+      await simulateNative('link_tapped', <String, Object?>{});
+      await pumpEventQueue();
+
+      expect(taps, isEmpty);
+    });
+  });
+
   group('Push Notifications', () {
     test('updatePushNotificationToken sends token', () async {
       await ZendeskMessaging.updatePushNotificationToken('test_fcm_token_123');

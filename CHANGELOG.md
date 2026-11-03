@@ -1,3 +1,14 @@
+## Unreleased
+
+### Features
+
+- **Links**: `setHandledLinkHosts()` and `onLinkTapped` let the app take over
+  links tapped in the chat, by host, on Android and iOS. A listed host is not
+  opened by the SDK and its URL goes to `onLinkTapped`; any other link opens as
+  before. Nothing changes unless you call it.
+- **Links**: `closeMessaging()` closes the messaging UI, so a screen opened from
+  a link is not left behind the chat.
+
 ## 3.6.0
 
 ### Behavior Changes
