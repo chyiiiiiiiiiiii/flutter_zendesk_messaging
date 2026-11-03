@@ -1,12 +1,21 @@
 package com.chyiiiiiiiiiiiiii.zendesk_messaging
 
+import android.app.Activity
+import android.app.Application
 import android.content.Context
+import android.net.Uri
+import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import io.flutter.plugin.common.MethodChannel
 import zendesk.android.Zendesk
 import zendesk.android.ZendeskUser
 import zendesk.android.events.ZendeskEvent
 import zendesk.android.events.ZendeskEventListener
+import zendesk.android.messaging.Messaging
+import zendesk.android.messaging.MessagingDelegate
 import zendesk.android.messaging.MessagingScreen
+import zendesk.android.messaging.UrlSource
 import zendesk.messaging.android.DefaultMessagingFactory
 import zendesk.messaging.android.push.PushNotifications
 import zendesk.messaging.android.push.PushResponsibility
@@ -21,6 +30,42 @@ class ZendeskMessaging(
         // Method channel event keys
         const val EVENT_UNREAD_MESSAGES = "unread_messages"
         const val EVENT_ZENDESK_EVENT = "zendesk_event"
+        const val EVENT_LINK_TAPPED = "link_tapped"
+    }
+
+    // The SDK has no close call, and its chat is singleTask in a task of its own, so
+    // bringing the app's Activity to the front would leave it behind for Back to find.
+    private val sdkActivities = mutableSetOf<Activity>()
+    val sdkActivityTracker = object : Application.ActivityLifecycleCallbacks {
+        override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
+            if (activity.javaClass.name.startsWith("zendesk.")) sdkActivities.add(activity)
+        }
+
+        override fun onActivityDestroyed(activity: Activity) {
+            sdkActivities.remove(activity)
+        }
+
+        override fun onActivityStarted(activity: Activity) = Unit
+        override fun onActivityResumed(activity: Activity) = Unit
+        override fun onActivityPaused(activity: Activity) = Unit
+        override fun onActivityStopped(activity: Activity) = Unit
+        override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) = Unit
+    }
+
+    // Kept here because the delegate must answer synchronously, which rules out asking Dart.
+    private var handledLinkHosts: Set<String> = emptySet()
+    private val mainHandler = Handler(Looper.getMainLooper())
+
+    // Must be this zendesk.android.messaging class: the SDK never calls the
+    // overload that zendesk.messaging.android.MessagingDelegate adds.
+    private val linkDelegate = object : MessagingDelegate() {
+        override fun shouldHandleUrl(url: String, urlSource: UrlSource): Boolean {
+            if (Uri.parse(url).host?.lowercase() !in handledLinkHosts) return true
+            mainHandler.post {
+                channel.invokeMethod(EVENT_LINK_TAPPED, mapOf("url" to url))
+            }
+            return false
+        }
     }
 
     // Event listener for all Zendesk events
@@ -330,6 +375,7 @@ class ZendeskMessaging(
             channelKey,
             successCallback = { value ->
                 plugin.isInitialized = true
+                applyLinkDelegate()
                 println("$TAG - initialize success - $value")
                 result.success(null)
             },
@@ -505,6 +551,23 @@ class ZendeskMessaging(
     // ============================================================================
     // Locale
     // ============================================================================
+
+    fun closeMessaging() {
+        sdkActivities.toList().forEach { it.finish() }
+        println("$TAG - closeMessaging")
+    }
+
+    fun setHandledLinkHosts(hosts: List<String>) {
+        handledLinkHosts = hosts.toSet()
+        applyLinkDelegate()
+    }
+
+    // With no hosts the delegate is left alone, so an app that set its own keeps it.
+    private fun applyLinkDelegate() {
+        if (handledLinkHosts.isNotEmpty()) {
+            Messaging.setDelegate(linkDelegate)
+        }
+    }
 
     fun setLocale(locale: String) {
         val parsedLocale = java.util.Locale.forLanguageTag(locale)

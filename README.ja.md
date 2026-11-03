@@ -189,6 +189,27 @@ await ZendeskMessaging.setLocale('fr');
 - **Android**: `Locale.setDefault()` を設定し、アプリケーション/アクティビティのリソース設定を更新します。SDKはAndroidのリソースシステムからUI文字列を解決するため、SDKがメッセージングActivityを起動したときに反映されます。実行時に切り替え可能です。
 - **iOS**: `AppleLanguages` のユーザーデフォルトを設定し、SDKが読み込むローカライズバンドルを制御します。iOSはこの値をアプリ起動時にのみ読み込むため、新しい言語は**次回のアプリ起動時**に反映されます。`invalidate()` の後に `initialize()` を呼んでも実行時には切り替わりません（[#105](https://github.com/chyiiiiiiiiiiii/flutter_zendesk_messaging/issues/105)）。この値はデバイスに保存され、アプリ自体のローカライズリソースの言語にも適用されます。
 
+## チャット内のリンク
+
+デフォルトでは、タップされたリンクは SDK から端末に渡されます。iOS では、この方法で開かれた自分のアプリへのユニバーサルリンクはアプリに戻らず Safari に移動します。アプリで処理するホストを指定してください。
+
+```dart
+// 先にリッスンしてください。リスナーがないとタップしても何も開きません。
+ZendeskMessaging.onLinkTapped.listen((url) async {
+  // このリンクはアプリが処理します。ルーティングするかブラウザで開いてください。
+  // アプリの画面を開く場合は、先にチャットを閉じてください。
+  await ZendeskMessaging.closeMessaging();
+});
+
+await ZendeskMessaging.setHandledLinkHosts(['app.example.com']);
+```
+
+- リストにあるホストへのリンクは SDK では開かれず、URL が `onLinkTapped` に届きます。それ以外のリンクは通常どおり開きます。
+- ホストは大文字と小文字を区別せず完全一致で比較します。`example.com` は `www.example.com` を含みません。
+- `closeMessaging()` を呼ぶまでチャットは開いたままです。
+- 空のリストで無効になります（デフォルト）。
+- Android では、`tel:` と `mailto:` のリンクは常に端末に渡されます。
+
 ## プッシュ通知
 
 ```dart

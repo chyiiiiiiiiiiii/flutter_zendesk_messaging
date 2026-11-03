@@ -189,6 +189,27 @@ await ZendeskMessaging.setLocale('fr');
 - **Android**: `Locale.setDefault()`를 설정하고 애플리케이션/액티비티 리소스 구성을 업데이트합니다. SDK는 Android 리소스 시스템에서 UI 문자열을 해석하므로, SDK가 메시징 액티비티를 실행할 때 적용됩니다. 런타임에 전환할 수 있습니다.
 - **iOS**: SDK가 로드하는 지역화 번들을 제어하는 `AppleLanguages` 사용자 기본값을 설정합니다. iOS는 앱이 실행될 때만 이 값을 읽으므로, 새 언어는 **다음 앱 실행 시** 적용됩니다. `invalidate()`를 호출한 다음 `initialize()`를 호출해도 실행 중에는 바뀌지 않습니다([#105](https://github.com/chyiiiiiiiiiiii/flutter_zendesk_messaging/issues/105)). 이 값은 기기에 저장되며, 앱 자체의 지역화 리소스 언어에도 적용됩니다.
 
+## 채팅의 링크
+
+기본적으로 SDK는 탭한 링크를 휴대폰에 넘깁니다. iOS에서는 이렇게 열린 자체 앱의 유니버설 링크가 앱으로 돌아오지 않고 Safari로 이동합니다. 앱에서 처리할 호스트를 지정하세요.
+
+```dart
+// 먼저 수신하세요. 리스너가 없으면 탭해도 아무것도 열리지 않습니다.
+ZendeskMessaging.onLinkTapped.listen((url) async {
+  // 이 링크는 앱이 처리합니다. 라우팅하거나 브라우저에서 여세요.
+  // 앱 화면을 여는 경우 먼저 채팅을 닫으세요.
+  await ZendeskMessaging.closeMessaging();
+});
+
+await ZendeskMessaging.setHandledLinkHosts(['app.example.com']);
+```
+
+- 목록에 있는 호스트의 링크는 SDK가 열지 않으며 URL이 `onLinkTapped`로 전달됩니다. 다른 링크는 평소처럼 열립니다.
+- 호스트는 대소문자를 구분하지 않고 정확히 일치해야 합니다. `example.com`은 `www.example.com`을 포함하지 않습니다.
+- `closeMessaging()`을 호출할 때까지 채팅은 열려 있습니다.
+- 빈 목록은 이 기능을 끄며, 기본값입니다.
+- Android에서 `tel:` 및 `mailto:` 링크는 항상 휴대폰으로 전달됩니다.
+
 ## 푸시 알림
 
 ```dart

@@ -68,6 +68,8 @@ class ZendeskMessaging {
       StreamController<int>.broadcast();
   static final StreamController<ZendeskEvent> _eventController =
       StreamController<ZendeskEvent>.broadcast();
+  static final StreamController<String> _linkTappedController =
+      StreamController<String>.broadcast();
 
   /// Stream of unread message count changes.
   ///
@@ -97,6 +99,13 @@ class ZendeskMessaging {
   /// });
   /// ```
   static Stream<ZendeskEvent> get eventStream => _eventController.stream;
+
+  /// URLs tapped in the chat whose host was passed to [setHandledLinkHosts].
+  ///
+  /// The SDK does not open these, so your app must. Listen before calling
+  /// [setHandledLinkHosts]: this is a broadcast stream, and a tap with no
+  /// listener opens nothing.
+  static Stream<String> get onLinkTapped => _linkTappedController.stream;
 
   // ============================================================================
   // Initialization
@@ -646,6 +655,79 @@ class ZendeskMessaging {
   }
 
   // ============================================================================
+  // Links
+  // ============================================================================
+
+  /// Close the messaging UI and return to your app's screen.
+  ///
+  /// Does nothing if the messaging UI is not open. Use this when a link from
+  /// [onLinkTapped] opens a screen in your app, which would otherwise sit
+  /// behind the chat.
+  static Future<void> closeMessaging() async {
+    try {
+      await _channel.invokeMethod('closeMessaging');
+      ZendeskMessagingConfig.log('Messaging closed');
+    } catch (e, stackTrace) {
+      ZendeskMessagingConfig.logError(
+        'closeMessaging failed',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      rethrow;
+    }
+  }
+
+  /// Take over links tapped in the chat when their host is in [hosts].
+  ///
+  /// A link to a listed host is not opened by the SDK; it arrives on
+  /// [onLinkTapped] instead. Any other link opens as usual. An empty list, the
+  /// default, turns this off.
+  ///
+  /// Hosts match exactly and ignore case, so `example.com` does not cover
+  /// `www.example.com`. The list replaces the previous one and survives
+  /// [invalidate], and this can be called before [initialize].
+  ///
+  /// `tel:` and `mailto:` links never reach this on Android, so listing a host
+  /// does not catch them.
+  ///
+  /// Throws [ArgumentError] if an entry is not a bare host name.
+  ///
+  /// Example:
+  /// ```dart
+  /// ZendeskMessaging.onLinkTapped.listen((url) async {
+  ///   await ZendeskMessaging.closeMessaging();
+  ///   openInApp(url);
+  /// });
+  /// await ZendeskMessaging.setHandledLinkHosts(['app.example.com']);
+  /// ```
+  static Future<void> setHandledLinkHosts(List<String> hosts) async {
+    final normalized = [for (final host in hosts) host.toLowerCase()];
+    for (final host in normalized) {
+      if (host.isEmpty || Uri.tryParse('https://$host')?.host != host) {
+        throw ArgumentError.value(
+          host,
+          'hosts',
+          'Must be a bare host name, such as example.com',
+        );
+      }
+    }
+
+    try {
+      await _channel.invokeMethod('setHandledLinkHosts', {
+        'hosts': normalized,
+      });
+      ZendeskMessagingConfig.log('Handled link hosts: $normalized');
+    } catch (e, stackTrace) {
+      ZendeskMessagingConfig.logError(
+        'setHandledLinkHosts failed',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      rethrow;
+    }
+  }
+
+  // ============================================================================
   // Push Notifications
   // ============================================================================
 
@@ -839,6 +921,12 @@ class ZendeskMessaging {
         // Legacy callback for backwards compatibility
         final count = arguments['messages_count'] as int?;
         _unreadMessagesCountController.add(count ?? 0);
+
+      case 'link_tapped':
+        final url = arguments['url'] as String?;
+        if (url != null) {
+          _linkTappedController.add(url);
+        }
 
       case 'zendesk_event':
         // New event system

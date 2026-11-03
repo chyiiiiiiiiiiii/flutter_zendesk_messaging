@@ -203,6 +203,22 @@ public class ZendeskMessagingPlugin: NSObject, FlutterPlugin {
             result(nil)
 
         // ================================================================
+        // Links
+        // ================================================================
+
+        case "closeMessaging":
+            zendeskMessaging?.closeMessaging(rootViewController: getRootViewController(), flutterResult: result)
+
+        case "setHandledLinkHosts":
+            // No isInitialized check: the hosts are also applied after initialize.
+            guard let hosts = arguments?["hosts"] as? [String] else {
+                result(FlutterError(code: "invalid_argument", message: "hosts is required", details: nil))
+                return
+            }
+            zendeskMessaging?.setHandledLinkHosts(hosts)
+            result(nil)
+
+        // ================================================================
         // Push Notifications
         // ================================================================
 

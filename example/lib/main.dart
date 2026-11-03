@@ -38,6 +38,7 @@ class _ZendeskMessagingDemoState extends State<ZendeskMessagingDemo> {
   final List<String> _logs = [];
   StreamSubscription<ZendeskEvent>? _eventSubscription;
   StreamSubscription<int>? _unreadCountSubscription;
+  StreamSubscription<String>? _linkSubscription;
 
   bool _isInitialized = false;
   bool _isLoggedIn = false;
@@ -55,6 +56,7 @@ class _ZendeskMessagingDemoState extends State<ZendeskMessagingDemo> {
   void dispose() {
     _eventSubscription?.cancel();
     _unreadCountSubscription?.cancel();
+    _linkSubscription?.cancel();
     super.dispose();
   }
 
@@ -91,6 +93,7 @@ class _ZendeskMessagingDemoState extends State<ZendeskMessagingDemo> {
       setState(() => _isInitialized = true);
       _log('SDK initialized successfully');
       _setupEventListeners();
+      await _takeOverLinks();
     } catch (e) {
       _log('Initialize failed: $e');
     }
@@ -113,6 +116,20 @@ class _ZendeskMessagingDemoState extends State<ZendeskMessagingDemo> {
     } catch (e) {
       _log('Invalidate failed: $e');
     }
+  }
+
+  // ========== Chat Links ==========
+
+  /// A chat link to this host comes to the app; any other opens in the browser.
+  static const String handledLinkHost = 'example.com';
+
+  Future<void> _takeOverLinks() async {
+    _linkSubscription?.cancel();
+    _linkSubscription = ZendeskMessaging.onLinkTapped.listen((url) async {
+      await ZendeskMessaging.closeMessaging();
+      _log('Link taken over: $url');
+    });
+    await ZendeskMessaging.setHandledLinkHosts([handledLinkHost]);
   }
 
   // ========== Event Listeners ==========

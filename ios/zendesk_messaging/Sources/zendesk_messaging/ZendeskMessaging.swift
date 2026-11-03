@@ -4,15 +4,21 @@ import ZendeskSDKMessaging
 import ZendeskSDK
 import UserNotifications
 
+// Marks the chat apart from any other screen presented over the app, so closing it cannot dismiss those.
+private final class MessagingNavigationController: UINavigationController {}
+
 public class ZendeskMessaging: NSObject {
     private static let unreadMessages = "unread_messages"
     private static let zendeskEvent = "zendesk_event"
+    private static let linkTapped = "link_tapped"
 
     let TAG = "[ZendeskMessaging]"
 
     private weak var zendeskPlugin: ZendeskMessagingPlugin?
     private let channel: FlutterMethodChannel
     private var lastConnectionStatus: String = "unknown"
+    // Kept here because the delegate must answer synchronously, which rules out asking Dart.
+    private var handledLinkHosts: Set<String> = []
 
     init(flutterPlugin: ZendeskMessagingPlugin, channel: FlutterMethodChannel) {
         self.zendeskPlugin = flutterPlugin
@@ -33,6 +39,7 @@ public class ZendeskMessaging: NSObject {
                     )
                 } else {
                     self.zendeskPlugin?.isInitialized = true
+                    self.applyLinkDelegate()
                     print("\(self.TAG) - initialize success")
                     flutterResult(nil)
                 }
@@ -71,7 +78,7 @@ public class ZendeskMessaging: NSObject {
             return
         }
 
-        let navController = UINavigationController(rootViewController: viewController)
+        let navController = MessagingNavigationController(rootViewController: viewController)
 
         DispatchQueue.main.async {
             if let presentedVC = rootViewController.presentedViewController {
@@ -112,7 +119,7 @@ public class ZendeskMessaging: NSObject {
             return
         }
 
-        let navController = UINavigationController(rootViewController: viewController)
+        let navController = MessagingNavigationController(rootViewController: viewController)
 
         DispatchQueue.main.async {
             if let presentedVC = rootViewController.presentedViewController {
@@ -149,7 +156,7 @@ public class ZendeskMessaging: NSObject {
             return
         }
 
-        let navController = UINavigationController(rootViewController: viewController)
+        let navController = MessagingNavigationController(rootViewController: viewController)
 
         DispatchQueue.main.async {
             if let presentedVC = rootViewController.presentedViewController {
@@ -186,7 +193,7 @@ public class ZendeskMessaging: NSObject {
             return
         }
 
-        let navController = UINavigationController(rootViewController: viewController)
+        let navController = MessagingNavigationController(rootViewController: viewController)
 
         DispatchQueue.main.async {
             if let presentedVC = rootViewController.presentedViewController {
@@ -432,6 +439,29 @@ public class ZendeskMessaging: NSObject {
     // Locale
     // ============================================================================
 
+    func closeMessaging(rootViewController: UIViewController?, flutterResult: @escaping FlutterResult) {
+        guard let chat = rootViewController?.presentedViewController as? MessagingNavigationController else {
+            flutterResult(nil)
+            return
+        }
+        chat.dismiss(animated: true) {
+            flutterResult(nil)
+        }
+        print("\(self.TAG) - closeMessaging")
+    }
+
+    func setHandledLinkHosts(_ hosts: [String]) {
+        handledLinkHosts = Set(hosts)
+        applyLinkDelegate()
+    }
+
+    // With no hosts the delegate is left alone, so an app that set its own keeps it.
+    private func applyLinkDelegate() {
+        if !handledLinkHosts.isEmpty {
+            Messaging.delegate = self
+        }
+    }
+
     func setLocale(locale: String) {
         UserDefaults.standard.set([locale], forKey: "AppleLanguages")
         UserDefaults.standard.synchronize()
@@ -516,7 +546,7 @@ public class ZendeskMessaging: NSObject {
                     return
                 }
                 if let vc = viewController, let rootVC = rootViewController {
-                    let navController = UINavigationController(rootViewController: vc)
+                    let navController = MessagingNavigationController(rootViewController: vc)
                     DispatchQueue.main.async {
                         if let presentedVC = rootVC.presentedViewController {
                             presentedVC.dismiss(animated: true) {
@@ -537,5 +567,17 @@ public class ZendeskMessaging: NSObject {
             print("\(self.TAG) - handleNotificationTap: not a Zendesk notification")
             completion(false)
         }
+    }
+}
+
+extension ZendeskMessaging: MessagingDelegate {
+    public func messaging(_ messaging: Messaging, shouldHandleURL url: URL, from source: URLSource) -> Bool {
+        guard let host = url.host?.lowercased(), handledLinkHosts.contains(host) else {
+            return true
+        }
+        DispatchQueue.main.async {
+            self.channel.invokeMethod(ZendeskMessaging.linkTapped, arguments: ["url": url.absoluteString])
+        }
+        return false
     }
 }
