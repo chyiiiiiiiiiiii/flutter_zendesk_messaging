@@ -329,6 +329,27 @@ await ZendeskMessaging.setLocale('fr');
 - **Android**：设置 `Locale.setDefault()` 并更新 application/activity 的资源配置。SDK 通过 Android 资源系统解析 UI 字符串，因此在 SDK 启动客服 Activity 时生效，可在运行时切换。
 - **iOS**：设置 `AppleLanguages` user default，决定 SDK 加载哪个语言 bundle。iOS 只在 App 启动时读取这个值，因此新语言要到**下次启动 App** 才会生效；调用 `invalidate()` 再 `initialize()` 无法在运行时切换（[#105](https://github.com/chyiiiiiiiiiiii/flutter_zendesk_messaging/issues/105)）。这个值会保存在设备上，也会改变 iOS 为你的 App 本身加载的语言资源。
 
+## 聊天中的链接
+
+默认情况下，SDK 会把点按的链接交给手机。在 iOS 上，以这种方式打开的自家应用通用链接会跳到 Safari，而不会回到应用。请指定要由应用处理的主机。
+
+```dart
+// 先监听：没有监听器时，点按不会打开任何内容。
+ZendeskMessaging.onLinkTapped.listen((url) async {
+  // 此链接现在由应用处理：进行路由，或在浏览器中打开。
+  // 如果要打开应用内页面，请先关闭聊天。
+  await ZendeskMessaging.closeMessaging();
+});
+
+await ZendeskMessaging.setHandledLinkHosts(['app.example.com']);
+```
+
+- 列表中主机的链接不会由 SDK 打开，其 URL 会发送到 `onLinkTapped`。其他链接照常打开。
+- 主机须完全匹配，不区分大小写：`example.com` 不包含 `www.example.com`。
+- 在调用 `closeMessaging()` 之前，聊天会保持打开。
+- 空列表表示关闭此功能，这也是默认值。
+- 在 Android 上，`tel:` 和 `mailto:` 链接始终交给手机。
+
 ## 推送通知
 
 启用推送通知，在应用程序处于后台或已关闭时通知用户有新消息。
@@ -468,6 +489,8 @@ await ZendeskMessaging.invalidate();
 | `show()` | `Future<void>` | 显示消息 UI |
 | `showConversation(id)` | `Future<void>` | 显示特定会话 |
 | `showConversationList()` | `Future<void>` | 显示会话列表 |
+| `closeMessaging()` | `Future<void>` | 关闭消息界面 |
+| `setHandledLinkHosts(hosts)` | `Future<void>` | 接管发往这些主机的聊天链接 |
 | `startNewConversation()` | `Future<void>` | 开始新会话 |
 | `loginUser(jwt)` | `Future<ZendeskLoginResponse>` | 使用 JWT 登录 |
 | `logoutUser()` | `Future<void>` | 登出当前用户 |
@@ -493,6 +516,7 @@ await ZendeskMessaging.invalidate();
 |--------|------|------|
 | `eventStream` | `Stream<ZendeskEvent>` | 所有 Zendesk 事件 |
 | `unreadMessagesCountStream` | `Stream<int>` | 未读数量变更（旧版） |
+| `onLinkTapped` | `Stream<String>` | 主机已传入 `setHandledLinkHosts()` 的已点按链接 |
 
 ### Models
 
@@ -614,7 +638,7 @@ await ZendeskMessaging.listenUnreadMessages();
 
 | 插件 | Android SDK | iOS SDK |
 |------|-------------|---------|
-| 3.5.0 – 3.6.0 | 2.40.0 | 2.39.0 |
+| 3.5.0 – 3.7.0 | 2.40.0 | 2.39.0 |
 | 3.1.0 – 3.4.0 | 2.36.1 | 2.36.0 |
 | 3.0.0 | 2.36.1 | 2.36.0 |
 | 2.9.x | 2.26.0 | 2.24.0 |

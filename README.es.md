@@ -229,6 +229,27 @@ await ZendeskMessaging.setLocale('fr');
 - **Android**: Establece `Locale.setDefault()` y actualiza la configuración de recursos de la aplicación/actividad. El SDK resuelve los textos de la interfaz desde el sistema de recursos de Android, por lo que surte efecto al lanzar la actividad de mensajería. Se puede cambiar en tiempo de ejecución.
 - **iOS**: Establece la preferencia de usuario `AppleLanguages`, que controla qué paquete de localización carga el SDK. iOS solo lee este valor al iniciar la app, así que el nuevo idioma se aplica en el **próximo inicio de la app**. Llamar a `invalidate()` y luego a `initialize()` no lo cambia en tiempo de ejecución ([#105](https://github.com/chyiiiiiiiiiiii/flutter_zendesk_messaging/issues/105)). El valor se guarda en el dispositivo y también define el idioma que iOS usa para los recursos localizados de tu propia app.
 
+## Enlaces en el chat
+
+De forma predeterminada, el SDK entrega al teléfono el enlace que se toca. En iOS, un enlace universal a tu propia app abierto de esta forma va a Safari en lugar de volver a tu app. Indica qué hosts quieres gestionar en tu app.
+
+```dart
+// Escucha primero: un toque sin oyente no abre nada.
+ZendeskMessaging.onLinkTapped.listen((url) async {
+  // Tu app gestiona este enlace: enrútalo o ábrelo en un navegador.
+  // Si abre una de tus pantallas, cierra antes el chat.
+  await ZendeskMessaging.closeMessaging();
+});
+
+await ZendeskMessaging.setHandledLinkHosts(['app.example.com']);
+```
+
+- Un enlace a un host de la lista no lo abre el SDK y su URL llega a `onLinkTapped`. Cualquier otro enlace se abre como siempre.
+- Los hosts coinciden de forma exacta, sin distinguir mayúsculas: `example.com` no incluye `www.example.com`.
+- El chat sigue abierto hasta que llames a `closeMessaging()`.
+- Una lista vacía lo desactiva, y es el valor predeterminado.
+- En Android, los enlaces `tel:` y `mailto:` siempre van al teléfono.
+
 ## Notificaciones Push
 
 ```dart

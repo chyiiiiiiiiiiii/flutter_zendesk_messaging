@@ -3,8 +3,8 @@ package com.chyiiiiiiiiiiiiii.zendesk_messaging
 import android.app.Activity
 import android.app.Application
 import android.content.Context
-import android.os.Bundle
 import android.net.Uri
+import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import io.flutter.plugin.common.MethodChannel

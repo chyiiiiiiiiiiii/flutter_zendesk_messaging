@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 A Flutter plugin for integrating Zendesk Messaging SDK into mobile applications. This is a federated plugin with platform-specific implementations for Android (Kotlin) and iOS (Swift).
 
-**Current Version**: 3.6.0
+**Current Version**: 3.7.0
 **SDK Versions**: Android 2.40.0, iOS 2.39.0
 
 ## Development Commands
@@ -74,7 +74,12 @@ Two event channels exist:
 2. `zendesk_event` - New unified event system (24 event types)
 
 ### Method Channel
-Single channel named `zendesk_messaging` handles all communication between Dart and native code. Methods require SDK initialization before use (except `initialize` and `isInitialized`).
+Single channel named `zendesk_messaging` handles all communication between Dart and native code. Methods require SDK initialization before use (except `initialize`, `isInitialized` and `setHandledLinkHosts`).
+
+### Links in the Chat
+`setHandledLinkHosts` keeps the host list on the native side, because the SDK's delegate must answer synchronously. Traps:
+- Android: only `zendesk.android.messaging.MessagingDelegate` is called. The overload on the `zendesk.messaging.android` subclass never fires.
+- Android: `closeMessaging` finishes the SDK's activities. `MessagingActivity` is `singleTask` in its own task, so `CLEAR_TOP` leaves it behind and Back returns to it. Test this with a real tap and Back, not only the top activity.
 
 ## Key Patterns
 
