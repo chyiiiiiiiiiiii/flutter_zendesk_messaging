@@ -1,3 +1,14 @@
+## 3.7.1
+
+### Bug Fixes
+
+- **iOS (Swift Package Manager)**: Fix the build failing with "requires minimum
+  platform version 16.0" on a fresh package resolution, whatever the app's
+  deployment target. `ZendeskSDKMessaging` 2.39.0 depends on its sibling packages
+  with open version ranges, and their newer releases require iOS 16. The plugin
+  now pins them to the versions CocoaPods resolves, so the minimum stays iOS 14
+  (#110).
+
 ## 3.7.0
 
 ### Features
